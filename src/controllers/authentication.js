@@ -119,8 +119,7 @@ exports.verifyAccount = async (req, res) => {
     try {
         const {token} = req.params;
         const {otp} = req.body;
-        const bytes = AES.decrypt(token, process.env.CRYPTO_JS_ENCRYPT_KEY);
-        const decryptedToken = bytes.toString(cryptr.enc.Utf8);
+        const decryptedToken = cryptr.decrypt(token);
         const user = await User.findOne({token: decryptedToken});
         if (!user)
             return res.status(401).json({data: null, message: `Invalid token`});
