@@ -39,7 +39,7 @@ exports.register = async (req, res) => {
 
         const token = await jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '30days'});
         const encryptedToken = cryptr.encrypt(token);
-        user.token = encryptedToken;
+        user.token = token;
         const url = `https://susuplus.vercel.app/auth/verify/${encryptedToken}`;
         const message = `Click on the link ${url} and verify your email with the otp ${otp}`;
         await user.save();
@@ -104,7 +104,7 @@ exports.forgotPassword = async (req, res) => {
             return res.status(404).json({message: `No account associated with email ${email}`});
         const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET);
         const encryptedToken = cryptr.encrypt(token);
-        user.token = encryptedToken;
+        user.token = token;
         const url = `https://susuplus.vercel.app/auth/reset-password/${encryptedToken}`;
         const message = `Reset your password using the link ${url}`;
         await user.save();
