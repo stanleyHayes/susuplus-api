@@ -34,7 +34,7 @@ exports.register = async (req, res) => {
         const token = await jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '30days'});
         const encryptedToken = SHA256.encrypt(token, process.env.CRYPTO_JS_ENCRYPT_KEY);
         user.token = encryptedToken;
-        const url = `https://susuplus.herokuapp.com/api/v1/auth/verify/${encryptedToken}`;
+        const url = `https://susuplus.vercel.app/auth/verify/${encryptedToken}`;
         const message = `Click on the link ${url} and verify your email with the otp ${otp}`;
         await user.save();
         await sendEmail(email, 'VERIFY ACCOUNT WITH SUSU PLUS', message);
@@ -99,7 +99,7 @@ exports.forgotPassword = async (req, res) => {
         const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET);
         const encryptedToken = SHA256.encrypt(token, process.env.CRYPTO_JS_ENCRYPT_KEY);
         user.token = encryptedToken;
-        const url = `https://susuplus.herokuapp.com/api/v1/auth/reset-password/${encryptedToken}`;
+        const url = `https://susuplus.vercel.app/auth/reset-password/${encryptedToken}`;
         const message = `Reset your password using the link ${url}`;
         await user.save();
         await sendEmail(email, 'RESET PASSWORD', message);
@@ -178,7 +178,7 @@ exports.resendOTP = async (req, res) => {
         user.token = encryptedToken;
         user.otp = otp;
         user.otpValidUntil = otpValidUntil;
-        const url = `https://susuplus.herokuapp.com/api/v1/auth/verify/${encryptedToken}`;
+        const url = `https://susuplus.vercel.app/auth/verify/${encryptedToken}`;
         const message = `Click on the link ${url} and verify your email with the otp ${otp}`;
         await user.save();
         await sendEmail(email, 'VERIFY ACCOUNT WITH SUSU PLUS', message);
