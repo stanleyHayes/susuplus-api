@@ -3,7 +3,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const validator = require('validator');
 const moment = require('moment');
-const AES = require('crypto-js/aes');
+const dotenv = require('dotenv');
+const Cryptr = require('cryptr');
+
+dotenv.config();
+const cryptr = new Cryptr(process.env.CRYPTO_JS_ENCRYPT_KEY);
 
 const {generateOTP} = require("../utils/otp-generator");
 const {sendEmail} = require("../utils/emails");
@@ -19,7 +23,9 @@ exports.register = async (req, res) => {
         if (!validator.isStrongPassword(password)) {
             return res.status(400).json({message: 'Enter a strong password', data: null});
         }
-        const otp = generateOTP(process.env.OTP_LENGTH, {digits: true, alphabets: false, specialChars: false});
+        const otp = generateOTP(process.env.OTP_LENGTH, {
+            digits: true, alphabets: false, specialChars: false, upperCase: false
+        });
         const otpValidUntil = moment().add(30, 'days');
         const user = await User.create({
             role,
@@ -32,7 +38,7 @@ exports.register = async (req, res) => {
         });
 
         const token = await jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '30days'});
-        const encryptedToken = SHA256.encrypt(token, process.env.CRYPTO_JS_ENCRYPT_KEY);
+        const encryptedToken = cryptr.encrypt(token);
         user.token = encryptedToken;
         const url = `https://susuplus.vercel.app/auth/verify/${encryptedToken}`;
         const message = `Click on the link ${url} and verify your email with the otp ${otp}`;
@@ -97,7 +103,7 @@ exports.forgotPassword = async (req, res) => {
         if (!user)
             return res.status(404).json({message: `No account associated with email ${email}`});
         const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET);
-        const encryptedToken = SHA256.encrypt(token, process.env.CRYPTO_JS_ENCRYPT_KEY);
+        const encryptedToken = cryptr.encrypt(token);
         user.token = encryptedToken;
         const url = `https://susuplus.vercel.app/auth/reset-password/${encryptedToken}`;
         const message = `Reset your password using the link ${url}`;
@@ -113,7 +119,8 @@ exports.verifyAccount = async (req, res) => {
     try {
         const {token} = req.params;
         const {otp} = req.body;
-        const decryptedToken = AES.decrypt(token, process.env.CRYPTO_JS_ENCRYPT_KEY);
+        const bytes = AES.decrypt(token, process.env.CRYPTO_JS_ENCRYPT_KEY);
+        const decryptedToken = bytes.toString(cryptr.enc.Utf8);
         const user = await User.findOne({token: decryptedToken});
         if (!user)
             return res.status(401).json({data: null, message: `Invalid token`});
@@ -171,10 +178,13 @@ exports.resendOTP = async (req, res) => {
         const user = await User.findOne({email});
         if (!user)
             return res.status(404).json({message: `No account associated with ${email}`, data: null});
-        const otp = generateOTP(process.env.OTP_LENGTH, {digits: true, alphabets: false, specialChars: false});
+        const otp = generateOTP(process.env.OTP_LENGTH, {
+            digits: true, alphabets: false, specialChars: false, upperCase: false
+        });
         const otpValidUntil = moment().add(30, 'days');
         const token = await jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '30days'});
-        const encryptedToken = SHA256.encrypt(token, process.env.CRYPTO_JS_ENCRYPT_KEY);
+
+        const encryptedToken = cryptr.encrypt(token);
         user.token = encryptedToken;
         user.otp = otp;
         user.otpValidUntil = otpValidUntil;
@@ -207,11 +217,11 @@ exports.resetPassword = async (req, res) => {
     try {
         const {token} = req.params;
         const {password} = req.body;
-        const decryptedToken = AES.decrypt(token, process.env.CRYPTO_JS_ENCRYPT_KEY);
+        const decryptedToken = cryptr.decrypt(token);
         const user = await User.findOne({token: decryptedToken});
         if (!user)
             return res.status(401).json({data: null, message: `Invalid token`});
-        if(!validator.isStrongPassword(password))
+        if (!validator.isStrongPassword(password))
             return res.status(400).json({message: 'Enter a strong password', data: null});
         user.password = await bcrypt.hash(password, 10);
         await user.save();
