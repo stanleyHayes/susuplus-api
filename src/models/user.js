@@ -73,6 +73,28 @@ const userSchema = new Schema({
         type: String,
         enum: ['ADMIN', 'SUPER_ADMIN', 'USER'],
         default: 'USER'
+    },
+    otp: {
+        type: String
+    },
+    otpValidUntil: {
+        type: Date
+    },
+    token: {
+        type: String
+    },
+    status: {
+        type: String,
+        enum: ['VERIFIED', 'SUSPENDED', 'DEACTIVATED', 'PENDING'],
+        default: 'PENDING'
+    },
+    deactivate: {
+        reason: {
+            type: String
+        },
+        date: {
+            type: Date
+        }
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});
 
