@@ -6,6 +6,7 @@ const Schema = mongoose.Schema;
 const mobileMoneyAccountSchema = new Schema({
 
     number: {
+        unique: true,
         type: String,
         required: true,
         validate(value) {

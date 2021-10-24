@@ -8,7 +8,7 @@ exports.createMobileMoneyAccount = async (req, res) => {
         const {
             number,
             provider,
-            ownership,
+            groupID,
             ownershipType
         } = req.body;
 
@@ -16,7 +16,7 @@ exports.createMobileMoneyAccount = async (req, res) => {
         let populatedMobileMoneyAccount;
         if (ownershipType === 'GROUP') {
             // find group card will belong to
-            const group = await Group.findById(ownership.group);
+            const group = await Group.findById(groupID);
             if (!group)
                 return res.status(404).json({message: 'Group not found', data: null});
 
@@ -36,7 +36,7 @@ exports.createMobileMoneyAccount = async (req, res) => {
             mobileMoneyAccount = await MobileMoneyAccount.create({
                 provider,
                 number,
-                ownership,
+                ownership: {type: ownershipType, group: groupID},
                 creator: req.user._id
             });
 
@@ -47,19 +47,23 @@ exports.createMobileMoneyAccount = async (req, res) => {
 
         } else if (ownershipType === 'INDIVIDUAL') {
 
+            const existingMobileMoneyAccount = await MobileMoneyAccount.findOne({number, provider});
+            if(existingMobileMoneyAccount)
+                return res.status(409).json({message: `${number} has already been registered`});
             mobileMoneyAccount = await MobileMoneyAccount.create({
                 number,
                 provider,
-                ownership,
+                ownership: {type: ownershipType, user: req.user._id},
                 creator: req.user._id
             });
 
             populatedMobileMoneyAccount = await MobileMoneyAccount.findById(mobileMoneyAccount._id)
                 .populate({path: 'creator', select: 'name email'})
-                .populate({path: 'ownership.user'})
-                .populate({path: 'creator'});
+                .populate({path: 'ownership.user', select: 'name email'})
+                .populate({path: 'creator', select: 'name email'});
+        } else {
+            return res.status(400).json({message: 'Unknown user type', data: null});
         }
-
         res.status(201).json({message: 'Mobile Money Account Created', data: populatedMobileMoneyAccount});
     } catch (e) {
         res.status(500).json({message: e.message});
@@ -92,11 +96,11 @@ exports.getMobileMoneyAccounts = async (req, res) => {
         const skip = (page - 1) * limit;
 
         const match = {};
-        if(req.query.status){
+        if (req.query.status) {
             match['status'] = req.query.status;
         }
 
-        if(req.query.group){
+        if (req.query.group) {
             match['ownership.group'] = req.query.group;
         }
 
