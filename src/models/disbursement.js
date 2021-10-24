@@ -21,9 +21,24 @@ const disbursementSchema = new Schema({
             type: String
         }
     },
-    paymentMethod: {
-        type: String,
-        required: true
+    payment: {
+        method: {
+            type: String,
+            enum: ['PAYPAL', 'MOMO', 'CARD', 'BANK'],
+            required: true
+        },
+        bankAccount: {
+            type: Schema.Types.ObjectId,
+            ref: 'BankAccount'
+        },
+        debitCard: {
+            type: Schema.Types.ObjectId,
+            ref: 'DebitCard'
+        },
+        mobileMoneyAccount: {
+            type: Schema.Types.ObjectId,
+            ref: 'MobileMoneyAccount'
+        }
     },
     paymentDetails: {
         type: String

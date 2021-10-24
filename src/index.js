@@ -8,12 +8,14 @@ const mongoose = require('mongoose');
 const authenticationRoutes = require('./routes/authentication');
 const groupMemberRoutes = require('./routes/group-members');
 const groupRoutes = require('./routes/groups');
-const cardRoutes = require('./routes/cards');
 const susuRoutes = require('./routes/susu');
 const disbursementRoutes = require('./routes/disbursements');
 const userRoutes = require('./routes/users');
 const susuMemberRoutes = require('./routes/susu-members');
 const contributionRoutes = require('./routes/contributions');
+const bankAccountRoutes = require('./routes/bank-accounts');
+const debitCardRoutes = require('./routes/debit-cards');
+const mobileMoneyAccountRoutes = require('./routes/mobile-money-accounts');
 
 const app = express();
 dotenv.config();
@@ -33,12 +35,14 @@ app.use(morgan('dev'));
 app.use('/api/v1/auth', authenticationRoutes);
 app.use('/api/v1/group-members', groupMemberRoutes);
 app.use('/api/v1/groups', groupRoutes);
-app.use('/api/v1/cards', cardRoutes);
 app.use('/api/v1/susus', susuRoutes);
 app.use('/api/v1/disbursements', disbursementRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/susu-members', susuMemberRoutes);
 app.use('/api/v1/contributions', contributionRoutes);
+app.use('/api/v1/bank-accounts', bankAccountRoutes);
+app.use('/api/v1/mobile-money-accounts', mobileMoneyAccountRoutes);
+app.use('/api/v1/debit-cards', debitCardRoutes);
 
 
 const PORT = process.env.PORT || 7000;

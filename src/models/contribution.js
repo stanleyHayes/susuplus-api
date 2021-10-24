@@ -21,10 +21,24 @@ const contributionSchema = new Schema({
         ref: 'User',
         required: true
     },
-    paymentMethod: {
-        type: String,
-        enum: ['PAYPAL', 'MOMO', 'CARD', 'BANK'],
-        required: true
+    payment: {
+        method: {
+            type: String,
+            enum: [ 'MOBILE_MONEY', 'DEBIT_CARD', 'BANK_ACCOUNT'],
+            required: true
+        },
+        bankAccount: {
+            type: Schema.Types.ObjectId,
+            ref: 'BankAccount'
+        },
+        debitCard: {
+            type: Schema.Types.ObjectId,
+            ref: 'DebitCard'
+        },
+        mobileMoneyAccount: {
+            type: Schema.Types.ObjectId,
+            ref: 'MobileMoneyAccount'
+        }
     },
     paymentDetails: {
         type: String
