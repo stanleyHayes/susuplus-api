@@ -3,6 +3,13 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const cardSchema = new Schema({
+    issuingNetwork: {
+        type: String,
+        required: true
+    },
+    address: {
+        type: String
+    },
     cardHolderName: {
         type: String,
         required: true
@@ -16,7 +23,7 @@ const cardSchema = new Schema({
         required: true
     },
     expiryDate: {
-        type: Date
+        type: String
     },
     ownership: {
         type: {
@@ -37,6 +44,10 @@ const cardSchema = new Schema({
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'User'
+    },
+    country: {
+        type: String,
+        required: true
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});
 

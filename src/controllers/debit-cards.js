@@ -10,22 +10,25 @@ exports.createDebitCard = async (req, res) => {
             cardNumber,
             cvv,
             expiryDate,
-            ownership,
-            ownershipType
+            ownershipType,
+            groupID,
+            issuingNetwork,
+            address,
+            country
         } = req.body;
 
         let debitCard;
         let populatedDebitCard;
         if (ownershipType === 'GROUP') {
             // find group card will belong to
-            const group = await Group.findById(ownership.group);
+            const group = await Group.findById(groupID);
             if (!group)
-                return res.status(404).json({message: 'Group not found', data: null});
+                return res.status(404).json({message: 'Group  not found', data: null});
 
             // check if user is member of the group
             const groupMember = await GroupMember
                 .findOne({user: req.user._id, group: group._id})
-                .populate({path: 'user', select: 'name role'})
+                .populate({path: 'user', select: 'name email role'})
                 .populate({group: 'group', select: 'name'});
 
             if (!groupMember)
@@ -40,30 +43,35 @@ exports.createDebitCard = async (req, res) => {
                 cardNumber,
                 cvv,
                 expiryDate,
-                ownership,
+                issuingNetwork,
+                country,
+                address,
+                ownership: {type: ownershipType, group: groupID},
                 creator: req.user._id
             });
 
             populatedDebitCard = await DebitCard.findById(debitCard._id)
                 .populate({path: 'creator', select: 'name email'})
-                .populate({path: 'ownership.group'})
-                .populate({path: 'creator'});
+                .populate({path: 'ownership.group', select: 'name'})
+                .populate({path: 'creator', select: 'name email'});
 
         } else if (ownershipType === 'INDIVIDUAL') {
-
             debitCard = await DebitCard.create({
                 cardHolderName,
                 cardNumber,
                 cvv,
+                issuingNetwork,
+                address,
+                country,
                 expiryDate,
-                ownership,
+                ownership: {type: ownershipType, user: req.user._id},
                 creator: req.user._id
             });
 
             populatedDebitCard = await DebitCard.findById(debitCard._id)
                 .populate({path: 'creator', select: 'name email'})
-                .populate({path: 'ownership.user'})
-                .populate({path: 'creator'});
+                .populate({path: 'ownership.user', select: 'name email'})
+                .populate({path: 'creator', select: 'name email'});
         }
 
         res.status(201).json({message: 'Debit Card Created', data: populatedDebitCard});
@@ -110,6 +118,9 @@ exports.getDebitCards = async (req, res) => {
             match['ownership.user'] = req.user._id;
         }
 
+        if(req.query.issuingNetwork){
+            match['issuingNetwork'] = req.query.issuingNetwork;
+        }
         const totalDebitCards = await DebitCard.find(match).countDocuments();
 
         const debitCards = await DebitCard.find(match)
@@ -181,7 +192,7 @@ exports.updateDebitCard = async (req, res) => {
         }
 
         const updates = Object.keys(req.body);
-        const allowedUpdates = ['cardHolderName', 'cardNumber', 'cvv', 'expiryDate'];
+        const allowedUpdates = ['cardHolderName', 'cardNumber', 'cvv', 'expiryDate', 'country', 'issuingNetwork', 'address'];
         const isAllowed = updates.every(update => allowedUpdates.includes(update));
         if (!isAllowed)
             return res.status(400).json({data: null, message: 'Updates not allowed'});
