@@ -45,6 +45,24 @@ const susuSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    iteration: {
+        type: Number,
+        default: 1
+    },
+    startDate: {
+        type: Date
+    },
+    endDate: {
+        type: Date
+    },
+    totalDisbursements: {
+        type: Number
+    },
+    status: {
+        type: String,
+        enum: ['STARTED', 'PAUSED', 'STOPPED', 'PENDING'],
+        default: 'PENDING'
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});
 

@@ -8,6 +8,11 @@ const susuMemberSchema = new Schema({
         ref: 'Susu',
         required: true
     },
+    group: {
+        type: Schema.Types.ObjectId,
+        ref: 'Group',
+        required: true
+    },
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User',
@@ -26,6 +31,10 @@ const susuMemberSchema = new Schema({
     },
     nextDisbursementDate: {
         type: Date
+    },
+    position: {
+        type: Number,
+        required: true
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});
 

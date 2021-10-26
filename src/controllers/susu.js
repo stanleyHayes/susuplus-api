@@ -6,7 +6,7 @@ const GroupMember = require('../models/group-member');
 
 exports.createSusu = async (req, res) => {
     try {
-        const {group: groupID, paymentPlan, paymentOrder, members} = req.body;
+        const {group: groupID, paymentPlan, members} = req.body;
 
         const group = await Group.findById(groupID);
         if (!group)
@@ -18,10 +18,9 @@ exports.createSusu = async (req, res) => {
         const susu = await Susu.create({
             group: groupID,
             paymentPlan,
-            creator: req.user._id,
-            paymentOrder
+            creator: req.user._id
         });
-
+        let position = 0;
         for (let memberID of members) {
             // find user associated with memberID
             const member = await User.findById(memberID);
@@ -30,9 +29,10 @@ exports.createSusu = async (req, res) => {
                 const groupMember = await GroupMember
                     .findOne({user: memberID, group: groupID});
                 if (groupMember) {
+                    position++;
                     // if the member is part of the group, create a susu member
                     await SusuMember
-                        .create({susu: susu._id, user: memberID});
+                        .create({susu: susu._id, user: memberID, group: groupID, position});
                 }
             }
         }

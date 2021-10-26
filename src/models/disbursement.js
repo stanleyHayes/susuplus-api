@@ -42,6 +42,9 @@ const disbursementSchema = new Schema({
     },
     paymentDetails: {
         type: String
+    },
+    iteration: {
+        type: Number
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});
 

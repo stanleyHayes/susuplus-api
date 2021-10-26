@@ -30,7 +30,7 @@ exports.createBankAccount = async (req, res) => {
                 return res.status(404).json({message: "You're not a member of this group", data: null});
 
             // check if the user is a group admin to create the account
-            if (groupMember.user.role !== 'ADMIN')
+            if (groupMember.role !== 'ADMIN')
                 return res.status({message: `Only admins can create group accounts`, data: null})
 
             bankAccount = await BankAccount.create({
@@ -166,7 +166,7 @@ exports.updateBankAccount = async (req, res) => {
                     });
 
                 // check if user is not an admin in the group and return an error message
-                if (groupMember.user.role !== 'ADMIN')
+                if (groupMember.role !== 'ADMIN')
                     return res.status(403).json({
                         message: 'You do not have the permission to delete this account',
                         data: null
@@ -237,7 +237,7 @@ exports.deleteBankAccount = async (req, res) => {
                     });
 
                 // check if user is not an admin in the group and return an error message
-                if (groupMember.user.role !== 'ADMIN')
+                if (groupMember.role !== 'ADMIN')
                     return res.status(403).json({
                         message: 'You do not have the permission to delete this account',
                         data: null

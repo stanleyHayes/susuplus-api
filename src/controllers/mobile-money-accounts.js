@@ -30,7 +30,7 @@ exports.createMobileMoneyAccount = async (req, res) => {
                 return res.status(404).json({message: "You're not a member of this group", data: null});
 
             // check if the user is a group admin to create the account
-            if (groupMember.user.role !== 'ADMIN')
+            if (groupMember.role !== 'ADMIN')
                 return res.status({message: `Only admins can create group accounts`, data: null})
 
             mobileMoneyAccount = await MobileMoneyAccount.create({
@@ -47,7 +47,8 @@ exports.createMobileMoneyAccount = async (req, res) => {
 
         } else if (ownershipType === 'INDIVIDUAL') {
 
-            const existingMobileMoneyAccount = await MobileMoneyAccount.findOne({number, provider});
+            const existingMobileMoneyAccount = await MobileMoneyAccount
+                .findOne({number, provider});
             if(existingMobileMoneyAccount)
                 return res.status(409).json({message: `${number} has already been registered`});
             mobileMoneyAccount = await MobileMoneyAccount.create({
@@ -166,7 +167,7 @@ exports.updateMobileMoneyAccount = async (req, res) => {
                     });
 
                 // check if user is not an admin in the group and return an error message
-                if (groupMember.user.role !== 'ADMIN')
+                if (groupMember.role !== 'ADMIN')
                     return res.status(403).json({
                         message: 'You do not have the permission to delete this account',
                         data: null
@@ -234,7 +235,7 @@ exports.deleteMobileMoneyAccount = async (req, res) => {
                     });
 
                 // check if user is not an admin in the group and return an error message
-                if (groupMember.user.role !== 'ADMIN')
+                if (groupMember.role !== 'ADMIN')
                     return res.status(403).json({
                         message: 'You do not have the permission to delete this account',
                         data: null
