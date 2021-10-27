@@ -27,13 +27,13 @@ const groupSchema = new Schema({
             type: Number,
             min: 0,
             max: 100,
-            default: 50
+            default: 100
         },
         investment: {
             type: Number,
             min: 0,
             max: 100,
-            default: 50
+            default: 0
         }
     },
     creator: {

@@ -4,6 +4,18 @@ const Susu = require('../models/susu');
 const SusuMember = require('../models/susu-member');
 const User = require('../models/user');
 
+
+/*
+* Check if group exists
+* Check if user adding a susu member exists
+* Check if susu exists and has not started
+* check if user adding susu member is a group member of the group
+* check if user adding susu member is a group admin
+* check if user being added is a group member
+* check if user being added is not already in the susu
+* Add user to payment order
+* */
+
 exports.addSusuMember = async (req, res) => {
     try {
         const {groupID, userID, susuID} = req.body;
@@ -55,6 +67,8 @@ exports.addSusuMember = async (req, res) => {
     }
 }
 
+
+// get susu members of a certain susu
 exports.getSusuMembers = async (req, res) => {
     try {
         res.status(200).json({message: `Get Susu Members`, data: {}});
@@ -64,6 +78,7 @@ exports.getSusuMembers = async (req, res) => {
 }
 
 
+// get details of a susu member of a certain susu
 exports.getSusuMember = async (req, res) => {
     try {
         res.status(200).json({message: `Get Susu Member`, data: {}});
@@ -72,14 +87,12 @@ exports.getSusuMember = async (req, res) => {
     }
 }
 
-exports.updateSusuMember = async (req, res) => {
-    try {
-        res.status(200).json({message: `Update Susu Member`, data: {}});
-    }catch (e) {
-        res.status(500).json({message: e.message});
-    }
-}
 
+// remove susu member
+/*
+* Susu member can only be removed if susu has not started
+*
+* */
 exports.removeSusuMember = async (req, res) => {
     try {
         res.status(200).json({message: `Delete Susu Member`, data: {}});

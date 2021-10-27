@@ -13,6 +13,11 @@ const disbursementSchema = new Schema({
         ref: 'Group',
         required: true
     },
+    susu: {
+        type: Schema.Types.ObjectId,
+        ref: 'Susu',
+        required: true
+    },
     amount: {
         value: {
             type: Number
@@ -42,9 +47,6 @@ const disbursementSchema = new Schema({
     },
     paymentDetails: {
         type: String
-    },
-    iteration: {
-        type: Number
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});
 

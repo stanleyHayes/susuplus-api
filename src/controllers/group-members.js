@@ -12,6 +12,15 @@ exports.addGroupMember = async (req, res) => {
         if (!user)
             return res.status(404).json({message: 'User does not exist', data: null});
 
+        const groupAdmin = await GroupMember.findOne({user: req.user._id, group: groupID});
+        if (!groupAdmin)
+            return res.status(404).json({data: null, message: `You do not belong to ${group.name}`});
+        if (groupAdmin.role !== 'ADMIN')
+            return res.status(404).json({
+                data: null,
+                message: `You do not have the permission to add a member to ${group.name}`
+            });
+
         const groupMember = await GroupMember.findOne({group: groupID, user: userID});
         if (groupMember)
             return res.status(409).json({message: 'User already exists in the group', data: null});
@@ -19,7 +28,7 @@ exports.addGroupMember = async (req, res) => {
         const createdGroupMember = await GroupMember.create({group: groupID, user: userID});
 
         const populatedGroupMember = await GroupMember.findById(createdGroupMember._id)
-            .populate({path: 'user', select: 'name email role'})
+            .populate({path: 'user', select: 'name email'})
             .populate({path: 'group', select: 'name'});
 
         res.status(200).json({
@@ -42,12 +51,13 @@ exports.getGroupMembers = async (req, res) => {
 
         const groupMembers = await GroupMember
             .find({group: req.query.group},
-                {user: 1})
+                {user: 1, role: 1})
             .populate({path: 'user', select: 'name email createdAt'});
 
         res.status(200).json({
-            message: `${groupMembers.length} Group Members Retrieved`,
-            data: groupMembers, group
+            message: `${groupMembers.length} Group Member${groupMembers.length === 1 ? '' : 's'} Retrieved`,
+            data: groupMembers,
+            group
         });
     } catch (e) {
         res.status(500).json({message: e.message});
@@ -113,17 +123,17 @@ exports.updateGroupMember = async (req, res) => {
 exports.removeGroupMember = async (req, res) => {
     try {
         const userID = req.params.id;
-        if(!req.query.group)
+        if (!req.query.group)
             return res.status(404).json({message: 'Group id required', data: null});
         const group = await Group.findById(req.query.group);
-        if(!group)
+        if (!group)
             return res.status(404).json({message: 'Group not found', data: null});
         const user = await User.findById(userID);
-        if(!user)
+        if (!user)
             return res.status(404).json({message: 'User not found', data: null});
         const groupMember = await GroupMember
             .findOne({group: req.query.group, user: userID});
-        if(!groupMember)
+        if (!groupMember)
             return res.status(404).json({message: 'User does not belong to the group', data: null});
         groupMember.status = 'REMOVED';
         await groupMember.save();
@@ -136,14 +146,17 @@ exports.removeGroupMember = async (req, res) => {
 exports.getGroupsOfUser = async (req, res) => {
     try {
         const userID = req.params.user;
-        const user = await User.findById(userID);
-        if(!user)
+        const user = await User.findById(userID, {name: 1, email: 1});
+        if (!user)
             return res.status(404).json({message: 'User not found', data: null});
         const groups = await GroupMember
             .find({user: userID, status: {'$ne': 'REMOVED'}},
                 {group: -1})
-            .populate({path: 'group'});
-        res.status(200).json({message: `${groups.length} groups acquired`, data: groups, user});
+            .populate({path: 'group', select: 'name description image'});
+        res.status(200).json({
+            message: `${groups.length} groups acquired`,
+            data: groups,
+            user});
     } catch (e) {
         res.status(500).json({message: e.message});
     }

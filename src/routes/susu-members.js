@@ -6,10 +6,15 @@ const {
     getSusuMember,
     getSusuMembers,
     removeSusuMember,
-    updateSusuMember
+
 } = require('../controllers/susu-members');
 
-router.route('/').post(addSusuMember).get(getSusuMembers);
-router.route('/:id').get(getSusuMember).put(updateSusuMember).delete(removeSusuMember);
+router.route('/')
+    .post(addSusuMember)
+    .get(getSusuMembers);
+
+router.route('/:id')
+    .get(getSusuMember)
+    .delete(removeSusuMember);
 
 module.exports = router;

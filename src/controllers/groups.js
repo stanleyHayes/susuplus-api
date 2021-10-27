@@ -23,7 +23,7 @@ exports.createGroup = async (req, res) => {
             .populate({path: 'creator', select: 'name role image'})
             .populate({path: 'members', populate: {path: 'user', select: 'name role image'}});
 
-        res.status(200).json({message: `Create Group`, data: createdGroup});
+        res.status(200).json({message: `${name} group created successfully`, data: createdGroup});
     } catch (e) {
         res.status(500).json({message: e.message});
     }
@@ -36,6 +36,9 @@ exports.getGroups = async (req, res) => {
         const limit = parseInt(req.query.size) || 50;
         const skip = (page - 1) * limit;
 
+        if(req.query.user){
+
+        }
         const totalGroups = await Group.find(match).countDocuments();
 
         const groups = await Group.find(match)

@@ -18,23 +18,16 @@ const susuMemberSchema = new Schema({
         ref: 'User',
         required: true
     },
-    previousDisbursement: {
-        type: Schema.Types.ObjectId,
-        ref: 'Disbursement'
-    },
-    nextDisbursement: {
-        type: Schema.Types.ObjectId,
-        ref: 'Disbursement'
-    },
-    previousDisbursementDate: {
-        type: Date
-    },
-    nextDisbursementDate: {
-        type: Date
+    isPaid: {
+        type: Boolean,
+        default: false
     },
     position: {
         type: Number,
         required: true
+    },
+    dateDisbursed: {
+        type: Date
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});
 

@@ -38,26 +38,37 @@ const susuSchema = new Schema({
         type: Date
     },
     paymentOrder: {
-        type: [Schema.Types.ObjectId],
-        ref: 'User'
+        type: [
+            {
+                user: {
+                    type: Schema.Types.ObjectId,
+                    ref: 'User',
+                    required: true
+                },
+                position: {
+                    type: Number,
+                    required: true
+                },
+                isPaid: {
+                    type: Boolean,
+                    default: false
+                },
+                datePaid: {
+                    type: Date
+                }
+            }
+        ]
     },
     creator: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    iteration: {
-        type: Number,
-        default: 1
-    },
     startDate: {
         type: Date
     },
     endDate: {
         type: Date
-    },
-    totalDisbursements: {
-        type: Number
     },
     status: {
         type: String,

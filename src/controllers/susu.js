@@ -4,9 +4,23 @@ const Susu = require('../models/susu');
 const User = require('../models/user');
 const GroupMember = require('../models/group-member');
 
+/*
+*
+* Check if group exists
+* Check if there is no susu that is currently active for the group
+* Check if user creating the susu is a group member and a group admin
+* set payment order of the susu group
+* Create susu members and send them messages and emails for those subscribed for it
+* Calculate end date based on the start date, payment plan, and the number of current members
+* set current Recipient
+* set next recipient
+* calculate next payment date
+* calculate current payment date
+*
+* */
 exports.createSusu = async (req, res) => {
     try {
-        const {group: groupID, paymentPlan, members} = req.body;
+        const {group: groupID, paymentPlan, members, startDate} = req.body;
 
         const group = await Group.findById(groupID);
         if (!group)
@@ -42,6 +56,9 @@ exports.createSusu = async (req, res) => {
     }
 }
 
+//get susu by groups
+//get susu by user
+//get susu by status
 exports.getSusus = async (req, res) => {
     try {
         const match = {};
@@ -70,6 +87,7 @@ exports.getSusus = async (req, res) => {
 }
 
 
+
 exports.getSusu = async (req, res) => {
     try {
         const susu = await Susu.findById(req.params.id)
@@ -85,6 +103,8 @@ exports.getSusu = async (req, res) => {
         res.status(500).json({message: e.message});
     }
 }
+
+
 
 exports.updateSusu = async (req, res) => {
     try {
