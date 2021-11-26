@@ -3,6 +3,7 @@ const SusuMember = require('../models/susu-member');
 const Susu = require('../models/susu');
 const User = require('../models/user');
 const GroupMember = require('../models/group-member');
+const moment = require("moment");
 
 /*
 *
@@ -20,8 +21,8 @@ const GroupMember = require('../models/group-member');
 * */
 exports.createSusu = async (req, res) => {
     try {
-        const {group: groupID, paymentPlan, members, startDate} = req.body;
-
+        const {group: groupID, paymentAmount, paymentCurrency, members, startDate, intervalAmount, intervalUnit} = req.body;
+        let status = 'PENDING';
         const group = await Group.findById(groupID);
         if (!group)
             return res.status(404).json({
@@ -29,11 +30,44 @@ exports.createSusu = async (req, res) => {
                 message: 'Group not found'
             });
 
+        const groupMember = await GroupMember.findById(req.user._id);
+        if(!groupMember)
+            return res.status(403).json({message: 'You are not a member of this group'});
+
+        if(groupMember.role !== 'ADMIN')
+            return res.status(403).json({message: 'You do not have the permission to perform this operation'});
+
+        // cannot create a susu if a susu has already started in the group
+        const activeSusu = await Susu.findOne({group: groupID, status: 'STARTED'});
+        if(activeSusu)
+            return res.status(400).json({message: 'A susu is already active in this group'});
+
+        if(moment().isSameOrBefore(startDate)){
+            status = 'STATUS';
+        }
+
+       if(!['days', 'day', 'week', 'weeks', 'month', 'months', 'year', 'years'].includes(intervalUnit)){
+           return res.status(400).json({message: 'Invalid interval unit'});
+       }
+
+        const paymentOrder = [];
+       let nextDate = startDate;
+
         const susu = await Susu.create({
             group: groupID,
-            paymentPlan,
-            creator: req.user._id
+            paymentPlan: {
+                amount: paymentAmount,
+                currency: paymentCurrency
+            },
+            contributionPlan: {
+                interval: intervalAmount,
+                unit: intervalUnit
+            },
+            creator: req.user._id,
+            startDate,
+            status
         });
+
         let position = 0;
         for (let memberID of members) {
             // find user associated with memberID
@@ -43,13 +77,28 @@ exports.createSusu = async (req, res) => {
                 const groupMember = await GroupMember
                     .findOne({user: memberID, group: groupID});
                 if (groupMember) {
+                    nextDate = moment(nextDate).add(intervalAmount, intervalUnit);
                     position++;
+                    paymentOrder.push({
+                        user: member._id,
+                        position,
+                        disbursementDate: nextDate
+                    });
+                    if(position === 1){
+                        susu.currentPayment.user = groupMember.user;
+                        susu.currentPayment.date = nextDate;
+                    }else if(position === 2){
+                        susu.nextPayment.user = groupMember.user;
+                        susu.nextPayment.date = nextDate;
+                    }
                     // if the member is part of the group, create a susu member
                     await SusuMember
                         .create({susu: susu._id, user: memberID, group: groupID, position});
                 }
             }
         }
+        susu.paymentOrder = paymentOrder;
+        await susu.save();
         res.status(200).json({message: `Susu created for group ${group.name}`, data: susu});
     } catch (e) {
         res.status(500).json({message: e.message});

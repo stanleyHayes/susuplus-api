@@ -9,16 +9,32 @@ const susuSchema = new Schema({
         required: true
     },
     currentRecipient: {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
+        user: {
+            type: Schema.Types.ObjectId,
+            ref: 'GroupMember'
+        },
+        date: {
+            type: Date
+        }
+
     },
     previousRecipient: {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
+        user: {
+            type: Schema.Types.ObjectId,
+            ref: 'GroupMember'
+        },
+        date: {
+            type: Date
+        }
     },
     nextRecipient: {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
+        user: {
+            type: Schema.Types.ObjectId,
+            ref: 'GroupMember'
+        },
+        date: {
+            type: Date
+        }
     },
     paymentPlan: {
         amount: {
@@ -29,28 +45,22 @@ const susuSchema = new Schema({
         }
     },
     contributionPlan: {
-        amount: {
-            type: Number
+        interval: {
+            type: Number,
+            min: 1
         },
         unit: {
-            type: String
+            type: String,
+            enum: ['days', 'day', 'week', 'weeks', 'month', 'months', 'year', 'years'],
+            required: true
         }
-    },
-    nextPaymentDate: {
-        type: Date
-    },
-    previousPaymentDate: {
-        type: Date
-    },
-    currentPaymentDate: {
-        type: Date
     },
     paymentOrder: {
         type: [
             {
                 user: {
                     type: Schema.Types.ObjectId,
-                    ref: 'User',
+                    ref: 'GroupMember',
                     required: true
                 },
                 position: {
