@@ -42,6 +42,11 @@ const contributionSchema = new Schema({
     },
     paymentDetails: {
         type: String
+    },
+    status: {
+        type: String,
+        enum: ['Success', 'Fail', 'Pending'],
+        default: 'Pending'
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});
 

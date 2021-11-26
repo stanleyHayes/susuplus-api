@@ -19,7 +19,7 @@ const {authenticate} = require("../middleware/authentication");
 router.post('/register', register);
 router.post('/login', login);
 router.get('/profile', authenticate, getProfile);
-router.put('/change-password', authenticate, authenticate, changePassword);
+router.put('/change-password', authenticate, changePassword);
 router.post('/forgot-password', forgotPassword);
 router.put('/reset-password/:token', resetPassword);
 router.put('/profile/deactivate', authenticate, deactivateProfile);

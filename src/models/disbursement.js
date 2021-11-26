@@ -36,9 +36,9 @@ const disbursementSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: 'BankAccount'
         },
-        debitCard: {
+        cardDetail: {
             type: Schema.Types.ObjectId,
-            ref: 'DebitCard'
+            ref: 'CardDetail'
         },
         mobileMoneyAccount: {
             type: Schema.Types.ObjectId,
@@ -47,6 +47,11 @@ const disbursementSchema = new Schema({
     },
     paymentDetails: {
         type: String
+    },
+    status: {
+        type: String,
+        enum: ['Success', 'Fail', 'Pending'],
+        default: 'Pending'
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});
 

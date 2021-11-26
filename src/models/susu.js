@@ -24,6 +24,14 @@ const susuSchema = new Schema({
         amount: {
             type: Number
         },
+        currency: {
+            type: String
+        }
+    },
+    contributionPlan: {
+        amount: {
+            type: Number
+        },
         unit: {
             type: String
         }
@@ -53,7 +61,7 @@ const susuSchema = new Schema({
                     type: Boolean,
                     default: false
                 },
-                datePaid: {
+                dateDisbursed : {
                     type: Date
                 }
             }
@@ -72,7 +80,7 @@ const susuSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['STARTED', 'PAUSED', 'STOPPED', 'PENDING'],
+        enum: ['STARTED', 'PAUSED', 'STOPPED', 'PENDING', 'COMPLETED'],
         default: 'PENDING'
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});

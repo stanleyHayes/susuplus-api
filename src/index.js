@@ -13,9 +13,7 @@ const disbursementRoutes = require('./routes/disbursements');
 const userRoutes = require('./routes/users');
 const susuMemberRoutes = require('./routes/susu-members');
 const contributionRoutes = require('./routes/contributions');
-const bankAccountRoutes = require('./routes/bank-accounts');
-const debitCardRoutes = require('./routes/debit-cards');
-const mobileMoneyAccountRoutes = require('./routes/mobile-money-accounts');
+const paymentMethodsRoutes = require('./routes/payment-methods');
 
 const app = express();
 dotenv.config();
@@ -40,9 +38,8 @@ app.use('/api/v1/disbursements', disbursementRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/susu-members', susuMemberRoutes);
 app.use('/api/v1/contributions', contributionRoutes);
-app.use('/api/v1/bank-accounts', bankAccountRoutes);
-app.use('/api/v1/mobile-money-accounts', mobileMoneyAccountRoutes);
-app.use('/api/v1/debit-cards', debitCardRoutes);
+app.use('/api/v1/payment-methods', paymentMethodsRoutes);
+
 
 
 const PORT = process.env.PORT || 7000;
