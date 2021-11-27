@@ -2,9 +2,6 @@ const Contribution = require('../models/contribution');
 const Group = require('../models/group');
 const GroupMember = require('../models/group-member');
 const {sendEmail} = require("../utils/emails");
-const MobileMoneyAccount = require('../models/mobile-money-account');
-const BankAccount = require('../models/bank-account');
-const DebitCard = require('../models/debit-card');
 
 exports.createContribution = async (req, res) => {
     try {
