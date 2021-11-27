@@ -63,7 +63,7 @@ exports.login = async (req, res) => {
             return res.status(401).json({data: null, message: 'Authentication Failed'});
         if (user.status === 'PENDING')
             return res.status(400).json({message: 'Please verify your account', data: null});
-        const token = await jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '1hr'});
+        const token = await jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '24hr'});
         res.status(200).json({message: `Successfully Logged In`, data: user, token});
     } catch (e) {
         res.status(500).json({message: e.message});
