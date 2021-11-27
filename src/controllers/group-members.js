@@ -152,11 +152,11 @@ exports.getGroupsOfUser = async (req, res) => {
         const groups = await GroupMember
             .find({user: userID, status: {'$ne': 'REMOVED'}},
                 {group: -1})
-            .populate({path: 'group', select: 'name description image'});
+            .populate({path: 'group', select: 'name description image percentages'});
         res.status(200).json({
             message: `${groups.length} groups acquired`,
-            data: groups,
-            user});
+            data: groups
+        });
     } catch (e) {
         res.status(500).json({message: e.message});
     }
