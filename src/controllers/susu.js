@@ -119,11 +119,14 @@ exports.createSusu = async (req, res) => {
         susu.endDate = nextDate;
         susu.paymentOrder = paymentOrder;
         await susu.save();
-        const createdSusu = await Susu.findById(susu._id).populate({path: 'creator',  populate: {path: "user", select: 'name image'}})
+        const createdSusu = await Susu.findById(susu._id).populate({
+            path: 'creator',
+            populate: {path: "user", select: 'name image'}
+        })
             .populate({path: "currentRecipient.member", populate: {path: "user", select: 'name image'}})
             .populate({path: "nextRecipient.member"})
             .populate({path: 'group'})
-            .populate({path: 'paymentOrder.member',  populate: {path: "user", select: 'name image'}});
+            .populate({path: 'paymentOrder.member', populate: {path: "user", select: 'name image'}});
 
         res.status(200).json({message: `Susu created for group ${group.name}`, data: createdSusu});
     } catch (e) {
@@ -165,13 +168,20 @@ exports.getSusus = async (req, res) => {
 exports.getSusu = async (req, res) => {
     try {
         const susu = await Susu.findById(req.params.id)
-            .populate({path: 'group', select: 'name'})
-            .populate({path: 'currentRecipient', select: 'name email image'})
-            .populate({path: 'previousRecipient', select: 'name email image'})
-            .populate({path: 'nextRecipient', select: 'name email image'})
-            .populate({path: 'creator', select: 'name email image'});
+            .populate({path: 'group', select: 'name description'})
+            .populate({path: 'currentRecipient.member', populate: {path: 'user', select: 'name email image'}})
+            .populate({path: 'previousRecipient.member', populate: {path: 'user', select: 'name email image'}})
+            .populate({path: 'nextRecipient.member', populate: {path: 'user', select: 'name email image'}})
+            .populate({path: 'creator', populate: {path: 'user', select: 'name email image'}})
+            .populate({path: 'paymentOrder.member', populate: {path: "user", select: 'name image'}});
+
         if (!susu)
             return res.status(404).json({data: null, message: 'Susu not found'});
+
+        if(moment().isSameOrAfter(susu.startDate)){
+            susus.status = 'STARTED';
+            await susu.save();
+        }
         res.status(200).json({message: `${susu.group.name}'s susu retrieved`, data: susu});
     } catch (e) {
         res.status(500).json({message: e.message});
