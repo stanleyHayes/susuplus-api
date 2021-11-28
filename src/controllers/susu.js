@@ -175,6 +175,9 @@ exports.getSusu = async (req, res) => {
             .populate({path: 'creator', populate: {path: 'user', select: 'name email image'}})
             .populate({path: 'paymentOrder.member', populate: {path: "user", select: 'name image'}});
 
+        const members = await SusuMember.find({}, {member: 1})
+            .populate({path: 'member', populate: {path: 'user', select: 'image name email'}});
+
         if (!susu)
             return res.status(404).json({data: null, message: 'Susu not found'});
 
@@ -182,7 +185,7 @@ exports.getSusu = async (req, res) => {
             susus.status = 'STARTED';
             await susu.save();
         }
-        res.status(200).json({message: `${susu.group.name}'s susu retrieved`, data: susu});
+        res.status(200).json({message: `${susu.group.name}'s susu retrieved`, data: susu, members});
     } catch (e) {
         res.status(500).json({message: e.message});
     }
