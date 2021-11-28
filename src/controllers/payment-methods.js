@@ -1,7 +1,6 @@
 const PaymentMethod = require("../models/payment-method");
 const Group = require("../models/group");
 const GroupMember = require("../models/group-member");
-
 const validator = require("validator");
 
 
