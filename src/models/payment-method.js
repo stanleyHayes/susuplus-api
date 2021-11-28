@@ -58,6 +58,10 @@ const paymentMethodSchema = new Schema({
             cardHolderName: {
                 type: String,
                 required: true
+            },
+            expiryDate: {
+                type: String,
+                required: true
             }
         }
     },
