@@ -112,7 +112,7 @@ exports.getSusuOfUser = async (req, res) => {
             return res.status(404).json({message: 'User not found', data: null});
         const susu = await SusuMember
             .find({user: userID, status: {'$ne': 'REMOVED'}})
-            .populate({path: 'susu', select:'contributionPlan paymentPlan status startDate endDate group', populate: {path: 'group', select: 'image name'}})
+            .populate({path: 'susu', select:'contributionPlan paymentPlan status startDate endDate group', populate: {path: 'group', select: 'image name description'}})
         res.status(200).json({
             message: `${susu.length} susu groups acquired`,
             data: susu
