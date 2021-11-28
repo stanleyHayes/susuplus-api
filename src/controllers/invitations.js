@@ -130,24 +130,35 @@ exports.getInvitations = async (req, res) => {
 exports.respondInvitation = async (req, res) => {
     try {
         const {id} = req.params;
+        console.log(id)
         const invitation = await Invitation.findById(id);
         if (!invitation) {
             return res.status(404).json({message: 'Invitation not found', data: null});
         }
+
+        const invitedUser = await User.findOne({email: invitation.email});
+        if(!invitedUser)
+            return res.status(404).json({message: 'User not found'});
+
         if (moment().isAfter(invitation.expirationDate)) {
             invitation.status = 'EXPIRED';
             await invitation.save();
-            return res.status(400).json({message: 'Invitation has expired', data: null});
+            return res.status(400).json({message: 'Invitation has expired', data: invitation});
         }
+
         if (invitation.email !== req.user.email) {
             return res.status(403).json({message: 'You are not allowed to perform this operation'});
         }
         if (invitation.status === 'REJECTED')
-            return res.status(400).json({message: 'Invitation already rejected', data: null});
+            return res.status(400).json({message: 'Invitation already rejected', data: invitation});
         if (req.body.response === 'ACCEPT') {
             invitation.status = 'ACCEPTED';
             invitation.acceptanceDate = Date.now();
             await invitation.save();
+            await GroupMember.create({
+                user: invitedUser._id,
+                group: invitation.group,
+            });
             res.status(200).json({data: invitation, message: 'Invitation Accepted'});
         } else if (req.body.response === 'REJECT') {
             invitation.status = 'REJECTED';
