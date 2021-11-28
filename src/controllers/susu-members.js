@@ -103,3 +103,23 @@ exports.removeSusuMember = async (req, res) => {
         res.status(500).json({message: e.message});
     }
 }
+
+exports.getSusuOfUser = async (req, res) => {
+    try {
+        const userID = req.params.user;
+        const user = await User.findById(userID, {name: 1, email: 1});
+        if (!user)
+            return res.status(404).json({message: 'User not found', data: null});
+        const susu = await SusuMember
+            .find({user: userID, status: {'$ne': 'REMOVED'}},
+                {group: -1})
+            .populate({path: 'susu', select:'contributionPlan paymentPlan status startDate endDate'})
+            .populate({path: 'group', select:'name image description percentages'});
+        res.status(200).json({
+            message: `${susu.length} susu groups acquired`,
+            data: susu
+        });
+    } catch (e) {
+        res.status(500).json({message: e.message});
+    }
+}

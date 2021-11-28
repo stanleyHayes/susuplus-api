@@ -6,15 +6,18 @@ const {
     getSusuMember,
     getSusuMembers,
     removeSusuMember,
-
+    getSusuOfUser
 } = require('../controllers/susu-members');
+const {authenticate} = require("../middleware/authentication");
 
 router.route('/')
     .post(addSusuMember)
     .get(getSusuMembers);
 
 router.route('/:id')
-    .get(getSusuMember)
     .delete(removeSusuMember);
+
+router.get('/:user/:susu', authenticate, getSusuMember);
+router.get('/:user', authenticate, getSusuOfUser);
 
 module.exports = router;

@@ -13,6 +13,11 @@ const susuMemberSchema = new Schema({
         ref: 'Group',
         required: true
     },
+    member: {
+        type: Schema.Types.ObjectId,
+        ref: 'GroupMember',
+        required: true
+    },
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User',

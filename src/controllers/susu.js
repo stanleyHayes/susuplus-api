@@ -112,7 +112,7 @@ exports.createSusu = async (req, res) => {
                     }
                     // if the member is part of the group, create a susu member
                     await SusuMember
-                        .create({susu: susu._id, user: memberID, group: groupID, position});
+                        .create({susu: susu._id, user: memberID, group: groupID, position, member: groupMember._id});
                 }
             }
         }
@@ -150,10 +150,10 @@ exports.getSusus = async (req, res) => {
         const totalSusuCount = await Susu.find(match).countDocuments();
         const totalSusu = await Susu.find(match)
             .populate({path: 'group', select: 'name'})
-            .populate({path: 'currentRecipient', select: 'name email image'})
-            .populate({path: 'previousRecipient', select: 'name email image'})
-            .populate({path: 'nextRecipient', select: 'name email image'})
-            .populate({path: 'creator', select: 'name email image'})
+            .populate({path: 'currentRecipient.member', select: 'name email image'})
+            .populate({path: 'previousRecipient.member', select: 'name email image'})
+            .populate({path: 'nextRecipient.member', select: 'name email image'})
+            .populate({path: 'creator', select: 'name image'})
             .skip(skip).limit(limit).sort({createdAt: -1});
         res.status(200).json({message: `Get Cards`, data: totalSusu, totalSusuCount});
     } catch (e) {
