@@ -111,7 +111,7 @@ exports.getInvitations = async (req, res) => {
         const invitations = await Invitation.find(match)
             .populate({path: 'inviter', select: 'email name'})
             .populate({path: 'invitee', select: 'email name'})
-            .populate({path: 'group', select: 'name'})
+            .populate({path: 'group', select: 'name description'})
             .skip(skip)
             .limit(limit)
             .sort({createdAt: -1});
