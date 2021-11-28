@@ -3,7 +3,7 @@ const GroupMember = require('../models/group-member');
 const Susu = require('../models/susu');
 const SusuMember = require('../models/susu-member');
 const User = require('../models/user');
-
+const moment = require("moment");
 
 /*
 * Check if group exists
@@ -27,6 +27,9 @@ exports.addSusuMember = async (req, res) => {
             return res.status(404).json({message: `Group not found`, data: null});
         if(!susu)
             return res.status(404).json({message: `Susu not found`, data: null});
+        if(moment().isAfter(susu.startDate())){
+            return res.status(400).json({message: 'Susu has already started'});
+        }
         if(!user)
             return res.status(404).json({message: `User not found`, data: null});
 
@@ -52,7 +55,7 @@ exports.addSusuMember = async (req, res) => {
         const position = susuMembers && susuMembers.length > 0 ? susuMembers[0].position: 1;
         const existingSusuMember = SusuMember.findOne({susu: susuID, group: groupID, user: userID});
         if(existingSusuMember)
-            return res.status(409).json({data: null, messsage: 'User already exist in susu group'});
+            return res.status(409).json({data: null, message: 'User already exist in susu group'});
 
         const newSusuMember = await SusuMember
             .create({susu: susuID, group: groupID, user: userID, position});

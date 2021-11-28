@@ -7,8 +7,9 @@ const {
     getSusus,
     updateSusu
 } = require('../controllers/susu');
+const {authenticate} = require("../middleware/authentication");
 
-router.route('/').post(createSusu).get(getSusus);
-router.route('/:id').get(getSusu).put(updateSusu);
+router.route('/').post(authenticate, createSusu).get(authenticate, getSusus);
+router.route('/:id').get(authenticate, getSusu).put(authenticate, updateSusu);
 
 module.exports = router;
