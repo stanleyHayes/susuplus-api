@@ -11,8 +11,8 @@ const {
 const {authenticate} = require("../middleware/authentication");
 
 router.route('/')
-    .post(addSusuMember)
-    .get(getSusuMembers);
+    .post(authenticate, addSusuMember)
+    .get(authenticate, getSusuMembers);
 
 router.route('/:id')
     .delete(removeSusuMember);

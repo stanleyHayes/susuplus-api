@@ -74,7 +74,13 @@ exports.addSusuMember = async (req, res) => {
 // get susu members of a certain susu
 exports.getSusuMembers = async (req, res) => {
     try {
-        res.status(200).json({message: `Get Susu Members`, data: {}});
+        const {susu: susuID} = req.query;
+        const susu = await Susu.findById(susuID);
+        if(!susu)
+            return res.status(404).json({message: 'Susu not found'});
+        const members = await SusuMember.find({susu: susuID})
+            .populate({path: 'member', populate: {path: 'user', select: 'name image'}});
+        res.status(200).json({message: `Get Susu Members`, data: members});
     }catch (e) {
         res.status(500).json({message: e.message});
     }
