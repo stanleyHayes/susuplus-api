@@ -67,9 +67,6 @@ const paymentMethodSchema = new Schema({
                 type: String,
                 required: true
             },
-            paystackAccountCode: {
-                type: String
-            },
             bankName: {
                 type: String,
                 required: true
