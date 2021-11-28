@@ -145,9 +145,20 @@ exports.updatePaymentMethod = async (req, res) => {
 
 exports.getPaymentMethod = async (req, res) => {
     try {
+        const {ownership} = req.query;
         const {id} = req.params;
-        const paymentMethod = await PaymentMethod.findOne({_id: id, })
-        res.status(200).json({message: 'Payment method retrieved', data: {}});
+        let paymentMethod
+        if(ownership === 'Individual'){
+            paymentMethod = await PaymentMethod.findOne({"owner.user": req.user.id, _id: id})
+                .populate({path: 'owner.user', select: 'name image'});
+        }else if(ownership === 'Group'){
+            const groupMember = await GroupMember.findOne({group: req.query.group, user: req.user._id, _id: id});
+            if(!groupMember)
+                return res.status(403).json({message: 'You are not a member of this group'});
+            paymentMethod = await PaymentMethod.find({"owner.group": req.query.group})
+                .populate({path: 'owner.group', select: 'name image'});
+        }
+        res.status(200).json({message: 'Payment method retrieved', data: paymentMethod});
     } catch (e) {
         res.status(500).json({message: e.message});
     }
