@@ -5,20 +5,6 @@ const User = require('../models/user');
 const GroupMember = require('../models/group-member');
 const moment = require("moment");
 
-/*
-*
-* Check if group exists
-* Check if there is no susu that is currently active for the group
-* Check if user creating the susu is a group member and a group admin
-* set payment order of the susu group
-* Create susu members and send them messages and emails for those subscribed for it
-* Calculate end date based on the start date, payment plan, and the number of current members
-* set current Recipient
-* set next recipient
-* calculate next payment date
-* calculate current payment date
-*
-* */
 exports.createSusu = async (req, res) => {
     try {
         const {
@@ -112,7 +98,14 @@ exports.createSusu = async (req, res) => {
                     }
                     // if the member is part of the group, create a susu member
                     await SusuMember
-                        .create({susu: susu._id, user: memberID, group: groupID, position, member: groupMember._id});
+                        .create({
+                            susu: susu._id,
+                            user: memberID,
+                            group: groupID,
+                            position,
+                            member: groupMember._id,
+                            disbursementDate: nextDate
+                        });
                 }
             }
         }
@@ -181,7 +174,7 @@ exports.getSusu = async (req, res) => {
         if (!susu)
             return res.status(404).json({data: null, message: 'Susu not found'});
 
-        if(moment().isSameOrAfter(susu.startDate)){
+        if (moment().isSameOrAfter(susu.startDate)) {
             susus.status = 'STARTED';
             await susu.save();
         }
@@ -199,6 +192,11 @@ exports.updateSusu = async (req, res) => {
         const susu = await Susu.findById(req.params.id);
         if (!susu)
             return res.status(404).json({message: 'Susu not found', data: null});
+        if(susu.status === 'PENDING' && moment().isSameOrAfter(susu.startDate)){
+            susu.status = 'STARTED';
+            await susu.save();
+            res.status(400).json({message: 'Susu already started. No updates can be performed'});
+        }
         const isAllowed = updates.every(update => allowedUpdates.includes(update));
         if (!isAllowed)
             return res.status(400).json({message: 'Updates not allowed', data: null});

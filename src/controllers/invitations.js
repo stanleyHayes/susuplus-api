@@ -26,7 +26,8 @@ exports.createInvitation = async (req, res) => {
                 data: null,
                 message: `You are not a member of group ${groupMember.group.name}`
             });
-        if (groupMember.user.role !== 'ADMIN')
+
+        if (groupMember.role !== 'ADMIN')
             return res.status(403).json({
                 message: `You are not authorized to send invitation`,
                 data: null
@@ -39,13 +40,20 @@ exports.createInvitation = async (req, res) => {
             return res.status(409).json({data: null, message: 'Invitation already sent'});
 
         const expirationDate = moment().add(30, 'days');
-        const invitation = await Invitation
-            .create({expirationDate, group, email, inviter: req.user._id});
+
+        const invitation = await Invitation.create({
+            expirationDate,
+            group,
+            email,
+            inviter: req.user._id,
+            invitee: invitee._id
+        });
         const link = `https://susuplus.vercel.app/groups/${group}/invitations/${invitation._id}`;
-        const message = `You have been invited by ${req.user.name} to join the group ${existingGroup.name} on Susu Plus using the ${link}`;
+        const message = `You have been invited by ${req.user.name} to join the group ${existingGroup.name} on Susu Plus using the link ${link}`;
         await sendEmail(email, 'GROUP INVITE', message);
         const populatedInvitation = await Invitation.findById(invitation._id)
-            .populate({path: 'inviter', select: 'name email'});
+            .populate({path: 'inviter', select: 'name email'})
+            .populate({path: 'group', select: 'name image description'});
 
         res.status(201).json({data: populatedInvitation, message: 'Invitation sent'});
     } catch (e) {

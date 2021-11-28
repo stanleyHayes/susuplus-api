@@ -3,13 +3,30 @@ const GroupMember = require('../models/group-member');
 
 exports.createGroup = async (req, res) => {
     try {
-        const {name, description, terms, privacyPolicies, percentages} = req.body;
+        const {
+            name,
+            description,
+            terms,
+            privacyPolicies,
+            susuPercentage,
+            investmentPercentage
+        } = req.body;
+
+        if(!name || !susuPercentage || !investmentPercentage)
+            return res.status(400).json({message: 'Missing required fields'});
+
+        if((parseInt(susuPercentage) + parseInt(investmentPercentage)) < 100 ||( parseInt(susuPercentage) + parseInt(investmentPercentage)) > 100)
+            return res.status(400).json({message: 'Investment and susu percentages must add up to 100'});
+
         const group = await Group.create({
             name,
             description,
             terms,
             privacyPolicies,
-            percentages,
+            percentages: {
+                susu: susuPercentage,
+                investment: investmentPercentage,
+            },
             creator: req.user._id
         });
 

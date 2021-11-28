@@ -31,7 +31,7 @@ const susuMemberSchema = new Schema({
         type: Number,
         required: true
     },
-    dateDisbursed: {
+    disbursementDate: {
         type: Date
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});
