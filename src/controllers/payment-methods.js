@@ -141,7 +141,6 @@ exports.updatePaymentMethod = async (req, res) => {
     }
 }
 
-
 exports.getPaymentMethod = async (req, res) => {
     try {
         const {ownership} = req.query;
@@ -162,7 +161,6 @@ exports.getPaymentMethod = async (req, res) => {
         res.status(500).json({message: e.message});
     }
 }
-
 
 exports.getPaymentMethods = async (req, res) => {
     try {

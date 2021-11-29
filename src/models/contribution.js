@@ -8,6 +8,11 @@ const contributionSchema = new Schema({
         ref: 'Group',
         required: true
     },
+    susu: {
+        type: Schema.Types.ObjectId,
+        ref: 'Susu',
+        required: true
+    },
     amount: {
         value: {
             type: Number
@@ -21,24 +26,20 @@ const contributionSchema = new Schema({
         ref: 'User',
         required: true
     },
-    payment: {
-        method: {
-            type: String,
-            enum: [ 'MOBILE_MONEY', 'DEBIT_CARD', 'BANK_ACCOUNT'],
-            required: true
-        },
-        bankAccount: {
-            type: Schema.Types.ObjectId,
-            ref: 'BankAccount'
-        },
-        debitCard: {
-            type: Schema.Types.ObjectId,
-            ref: 'DebitCard'
-        },
-        mobileMoneyAccount: {
-            type: Schema.Types.ObjectId,
-            ref: 'MobileMoneyAccount'
-        }
+    round: {
+        type: Number,
+        required: true,
+        min: 1
+    },
+    sourcePaymentMethod: {
+        type: Schema.Types.ObjectId,
+        ref: 'PaymentMethod',
+        required: true
+    },
+    destinationPaymentMethod: {
+        type: Schema.Types.ObjectId,
+        ref: 'PaymentMethod',
+        required: true
     },
     paymentDetails: {
         type: String
