@@ -79,11 +79,11 @@ exports.getGroup = async (req, res) => {
     try {
         const {id} = req.params;
         const group = await Group.findById(id)
-            .populate({path: 'creator', select: 'name role image'})
-            .populate({path: 'members', populate: {path: 'user', select: 'name role image'}});
+            .populate({path: 'creator', select: 'name role image'});
+
         const members = await GroupMember
             .find({group: id})
-            .populate({path: 'user'});
+            .populate({path: 'user', select: 'name image email'});
         if (!group) return res.status(404).json({message: 'Group Not Found', data: null});
         res.status(200).json({message: `Group ${group.name} retrieved`, data: group, members});
 

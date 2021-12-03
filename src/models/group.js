@@ -16,10 +16,7 @@ const groupSchema = new Schema({
     image: {
         type: String
     },
-    terms: {
-        type: [String]
-    },
-    privacyPolicies: {
+    regulations: {
         type: [String]
     },
     percentages: {
