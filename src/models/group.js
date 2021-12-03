@@ -51,7 +51,7 @@ const groupSchema = new Schema({
 groupSchema.virtual('members', {
     localField: '_id',
     foreignField: 'group',
-    ref: 'GroupMember',
+    ref: 'User',
     justOne: false
 });
 

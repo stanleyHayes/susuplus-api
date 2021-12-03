@@ -37,8 +37,7 @@ exports.createGroup = async (req, res) => {
         });
 
         const createdGroup = await Group.findById(group._id)
-            .populate({path: 'creator', select: 'name role image'})
-            .populate({path: 'members', populate: {path: 'user', select: 'name role image'}});
+            .populate({path: 'creator', select: 'name role image'});
 
         res.status(200).json({message: `${name} group created successfully`, data: createdGroup});
     } catch (e) {
@@ -63,7 +62,7 @@ exports.getGroups = async (req, res) => {
             .limit(limit)
             .sort({createdAt: -1})
             .populate({path: 'creator', select: 'name role image'})
-            .populate({path: 'members', populate: {path: 'user', select: 'name role image'}});
+            .populate({path: 'members'});
 
         res.status(200).json({
             message: `${groups.length} Group${groups.length === 1 ? '' : 's'} retrieved`,

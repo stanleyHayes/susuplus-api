@@ -92,6 +92,12 @@ const susuSchema = new Schema({
         type: String,
         enum: ['STARTED', 'PAUSED', 'STOPPED', 'PENDING', 'COMPLETED'],
         default: 'PENDING'
+    },
+    round: {
+        type: String,
+        required: Number,
+        min: 1,
+        default: 1
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});
 

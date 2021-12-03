@@ -2,6 +2,7 @@ const PaymentMethod = require("../models/payment-method");
 const Group = require("../models/group");
 const GroupMember = require("../models/group-member");
 const validator = require("validator");
+const {verifyBankAccount} = require("../utils/paystack");
 
 
 exports.addPaymentMethod = async (req, res) => {
@@ -27,7 +28,9 @@ exports.addPaymentMethod = async (req, res) => {
             if (!validator.isMobilePhone(mobileNumber))
                 return res.status(400).json({message: 'Invalid mobile phone'});
 
-
+            const {status, message, data} = await verifyBankAccount(accountNumber, bankCode);
+            if(!status && !data)
+                return res.status(400).json({message});
             const bankAccountPaymentMethod = await PaymentMethod.create({
                 method,
                 owner: {

@@ -108,7 +108,7 @@ const paymentMethodSchema = new Schema({
         type: {
             provider: {
                 type: String,
-                enum: ['MTN', 'Vodafone', 'AirtelTigo'],
+                enum: ['mtn', 'vod', 'tgo'],
                 required: true
             },
             number: {

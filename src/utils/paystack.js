@@ -8,7 +8,7 @@ exports.createSubAccount = async (accountName, bankCode, accountNumber, email, m
                 Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
                 'Content-Type': 'application/json'
             },
-            url: `https://paystack.co/subaccount`,
+            url: `https://api.paystack.co/subaccount`,
             data: {
                 business_name: accountName,
                 account_number: accountNumber,
@@ -28,7 +28,7 @@ exports.createSubAccount = async (accountName, bankCode, accountNumber, email, m
 exports.createCharge = async (email, amount, currency, bank, mobile_money, card, method) => {
     try {
         const data = {email, amount: amount * 100, currency};
-        switch (method){
+        switch (method) {
             case 'Mobile Money':
                 data['mobile_money'] = mobile_money;
                 break;
@@ -43,7 +43,7 @@ exports.createCharge = async (email, amount, currency, bank, mobile_money, card,
         }
         const response = await axios({
             method: 'POST',
-            url: `https://paystack.co/charge`,
+            url: `https://api.paystack.co/charge`,
             data,
             headers: {
                 Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
@@ -52,7 +52,25 @@ exports.createCharge = async (email, amount, currency, bank, mobile_money, card,
         });
 
         return response.data;
-    }catch (e) {
+    } catch (e) {
         return {data: null, message: e.message, status: false};
+    }
+}
+
+exports.verifyBankAccount = async (accountNumber, bankCode) => {
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: `https://api.paystack.co/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`,
+            headers: {
+                Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        console.log(response.data);
+        return response.data;
+    } catch (e) {
+        console.log(e.message)
+        return {message: 'Something Went wrong', data: null, status: false};
     }
 }
