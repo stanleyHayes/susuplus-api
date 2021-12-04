@@ -51,8 +51,8 @@ exports.getGroupMembers = async (req, res) => {
 
         const groupMembers = await GroupMember
             .find({group: req.query.group},
-                {user: 1, role: 1})
-            .populate({path: 'user', select: 'name email createdAt'});
+                {user: 1, role: 1, createdAt: 1})
+            .populate({path: 'user', select: 'name email'});
 
         res.status(200).json({
             message: `${groupMembers.length} Group Member${groupMembers.length === 1 ? '' : 's'} Retrieved`,
