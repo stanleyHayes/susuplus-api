@@ -14,7 +14,8 @@ exports.createSusu = async (req, res) => {
             members,
             startDate,
             intervalAmount,
-            intervalUnit
+            intervalUnit,
+            regulations
         } = req.body;
 
         let status = 'PENDING';
@@ -27,7 +28,7 @@ exports.createSusu = async (req, res) => {
                 message: 'Group not found'
             });
 
-        const susuMembers = [req.user._id, ...members];
+        const susuMembers = [...members];
 
         // check if the user creating the susu is a member of the group
         const groupMember = await GroupMember.findOne({user: req.user._id, group: groupID});
@@ -70,7 +71,8 @@ exports.createSusu = async (req, res) => {
             },
             creator: groupMember._id,
             startDate,
-            status
+            status,
+            regulations
         });
 
         let position = 0;
