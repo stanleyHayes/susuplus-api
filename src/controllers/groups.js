@@ -1,28 +1,28 @@
 const Group = require('../models/group');
 const GroupMember = require('../models/group-member');
+const {createInvitation} = require("../dao/invitation");
+const {addPaymentMethod} = require("../dao/payment-methods");
 
 exports.createGroup = async (req, res) => {
     try {
         const {
-            name,
-            description,
-            terms,
-            privacyPolicies,
-            susuPercentage,
-            investmentPercentage
+            basicInfo,
+            regulations,
+            invitations,
+            paymentMethod
         } = req.body;
 
-        if(!name || !susuPercentage || !investmentPercentage)
+        const {name, susuPercentage, description, investmentPercentage} = basicInfo;
+        if (!name || !susuPercentage || !investmentPercentage)
             return res.status(400).json({message: 'Missing required fields'});
 
-        if((parseInt(susuPercentage) + parseInt(investmentPercentage)) < 100 ||( parseInt(susuPercentage) + parseInt(investmentPercentage)) > 100)
+        if ((parseInt(susuPercentage) + parseInt(investmentPercentage)) < 100 || (parseInt(susuPercentage) + parseInt(investmentPercentage)) > 100)
             return res.status(400).json({message: 'Investment and susu percentages must add up to 100'});
 
         const group = await Group.create({
             name,
             description,
-            terms,
-            privacyPolicies,
+            regulations,
             percentages: {
                 susu: susuPercentage,
                 investment: investmentPercentage,
@@ -36,10 +36,15 @@ exports.createGroup = async (req, res) => {
             user: req.user._id
         });
 
-        const createdGroup = await Group.findById(group._id)
-            .populate({path: 'creator', select: 'name role image'});
+        for (let i = 0; i < invitations.length; i++) {
+            await createInvitation(invitations[i], group._id, req.user._id);
+        }
 
-        res.status(200).json({message: `${name} group created successfully`, data: createdGroup});
+        await addPaymentMethod(paymentMethod.method, paymentMethod.ownership, group._id, null, paymentMethod.bankAccount, paymentMethod.card, paymentMethod.mobileMoneyAccount);
+
+        const createdGroup = await Group.findById(group._id)
+            .populate({path: 'creator', select: 'name image'});
+        res.status(201).json({message: `${name} group created successfully`, data: createdGroup});
     } catch (e) {
         res.status(500).json({message: e.message});
     }
@@ -52,7 +57,7 @@ exports.getGroups = async (req, res) => {
         const limit = parseInt(req.query.size) || 50;
         const skip = (page - 1) * limit;
 
-        if(req.query.user){
+        if (req.query.user) {
 
         }
         const totalGroups = await Group.find(match).countDocuments();
