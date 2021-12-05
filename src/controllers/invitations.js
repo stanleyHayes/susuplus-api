@@ -133,8 +133,9 @@ exports.getInvitations = async (req, res) => {
 exports.respondInvitation = async (req, res) => {
     try {
         const {id} = req.params;
-        console.log(id)
-        const invitation = await Invitation.findById(id);
+        const invitation = await Invitation.findById(id)
+            .populate({path: 'group', select: 'name description image'})
+            .populate({path: 'invitee', select: 'image name'});
         if (!invitation) {
             return res.status(404).json({message: 'Invitation not found', data: null});
         }
