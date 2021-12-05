@@ -4,6 +4,7 @@ const Susu = require('../models/susu');
 const User = require('../models/user');
 const GroupMember = require('../models/group-member');
 const moment = require("moment");
+const Console = require("console");
 
 exports.createSusu = async (req, res) => {
     try {
@@ -69,7 +70,7 @@ exports.createSusu = async (req, res) => {
                 interval: intervalAmount,
                 unit: intervalUnit
             },
-            creator: groupMember._id,
+            creator: req.user._id,
             startDate,
             status,
             regulations
@@ -78,12 +79,14 @@ exports.createSusu = async (req, res) => {
         let position = 0;
         for (let memberID of susuMembers) {
             // find user associated with memberID
+            console.log(memberID)
             const member = await User.findById(memberID);
             if (member) {
                 // if there's a member, find if the member is part of the group
                 const groupMember = await GroupMember
                     .findOne({user: memberID, group: groupID});
                 if (groupMember) {
+                    console.log(groupMember)
                     nextDate = moment(nextDate).add(intervalAmount, intervalUnit);
                     position++;
                     paymentOrder.push({
@@ -115,8 +118,7 @@ exports.createSusu = async (req, res) => {
         susu.paymentOrder = paymentOrder;
         await susu.save();
         const createdSusu = await Susu.findById(susu._id).populate({
-            path: 'creator',
-            populate: {path: "user", select: 'name image'}
+            path: 'creator'
         })
             .populate({path: "currentRecipient.member", populate: {path: "user", select: 'name image'}})
             .populate({path: "nextRecipient.member"})

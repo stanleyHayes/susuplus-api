@@ -7,10 +7,7 @@ const {sendEmail} = require("../utils/emails");
 
 exports.createInvitation = async (req, res) => {
     try {
-        const {group, email} = req.body;
-        const invitee = await User.findOne({email});
-        if (!invitee)
-            return res.status(404).json({data: null, message: 'User does not exist.'});
+        const {group, invitations} = req.body;
 
         const existingGroup = await Group.findById(group);
         if (!existingGroup)
@@ -32,30 +29,36 @@ exports.createInvitation = async (req, res) => {
                 message: `You are not authorized to send invitation`,
                 data: null
             });
+        const populatedInvitations = [];
 
-        const existingInvitation = await Invitation
-            .findOne({group, email, status: {$ne: 'EXPIRED'}});
+        for (let i = 0; i < invitations.length; i++){
+            const email = invitations[i];
+            const invitee = await User.findOne({email});
+            if (invitee){
+                const existingInvitation = await Invitation
+                    .findOne({group, email, status: {$ne: 'EXPIRED'}});
 
-        if (existingInvitation)
-            return res.status(409).json({data: null, message: 'Invitation already sent'});
+                if (!existingInvitation){
+                    const expirationDate = moment().add(30, 'days');
 
-        const expirationDate = moment().add(30, 'days');
-
-        const invitation = await Invitation.create({
-            expirationDate,
-            group,
-            email,
-            inviter: req.user._id,
-            invitee: invitee._id
-        });
-        const link = `https://susuplus.vercel.app/groups/${group}/invitations/${invitation._id}`;
-        const message = `You have been invited by ${req.user.name} to join the group ${existingGroup.name} on Susu Plus using the link ${link}`;
-        await sendEmail(email, 'GROUP INVITE', message);
-        const populatedInvitation = await Invitation.findById(invitation._id)
-            .populate({path: 'inviter', select: 'name email'})
-            .populate({path: 'group', select: 'name image description'});
-
-        res.status(201).json({data: populatedInvitation, message: 'Invitation sent'});
+                    const invitation = await Invitation.create({
+                        expirationDate,
+                        group,
+                        email,
+                        inviter: req.user._id,
+                        invitee: invitee._id
+                    });
+                    const link = `https://susuplus.vercel.app/groups/${group}/invitations/${invitation._id}`;
+                    const message = `You have been invited by ${req.user.name} to join the group ${existingGroup.name} on Susu Plus using the link ${link}`;
+                    await sendEmail(email, 'GROUP INVITE', message);
+                    const populatedInvitation = await Invitation.findById(invitation._id)
+                        .populate({path: 'inviter', select: 'name email'})
+                        .populate({path: 'group', select: 'name image description'});
+                    populatedInvitations.push(populatedInvitation);
+                }
+            }
+        }
+        res.status(201).json({data: populatedInvitations, message: 'Invitations sent'});
     } catch (e) {
         res.status(500).json({message: e.message});
     }

@@ -79,7 +79,7 @@ const susuSchema = new Schema({
     },
     creator: {
         type: Schema.Types.ObjectId,
-        ref: 'GroupMember',
+        ref: 'User',
         required: true
     },
     startDate: {
