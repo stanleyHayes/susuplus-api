@@ -69,7 +69,7 @@ exports.createSusu = async (req, res) => {
                 interval: intervalAmount,
                 unit: intervalUnit
             },
-            creator: req.user._id,
+            creator: groupMember._id,
             startDate,
             status,
             regulations
@@ -115,7 +115,7 @@ exports.createSusu = async (req, res) => {
         susu.paymentOrder = paymentOrder;
         await susu.save();
         const createdSusu = await Susu.findById(susu._id)
-            .populate({path: 'creator'})
+            .populate({path: 'creator', select: 'user role', populate: {path: 'user', select: 'name email image'}})
             .populate({path: "currentRecipient.member", populate: {path: "user", select: 'name image'}})
             .populate({path: "nextRecipient.member"})
             .populate({path: 'group'})
@@ -146,10 +146,25 @@ exports.getSusus = async (req, res) => {
         const totalSusuCount = await Susu.find(match).countDocuments();
         const totalSusu = await Susu.find(match)
             .populate({path: 'group', select: 'name'})
-            .populate({path: 'currentRecipient.member', select: 'user', populate: {path: 'user', select: 'name email image'}})
-            .populate({path: 'previousRecipient.member', select: 'user', populate: {path: 'user', select: 'name email image'}})
-            .populate({path: 'nextRecipient.member', select: 'user', populate: {path: 'user', select: 'name email image'}})
-            .populate({path: 'creator', select: 'email name'})
+            .populate({
+                path: 'currentRecipient.member',
+                select: 'user',
+                populate: {path: 'user', select: 'name email image'}
+            })
+            .populate({
+                path: 'previousRecipient.member',
+                select: 'user',
+                populate: {path: 'user', select: 'name email image'}
+            })
+            .populate({
+                path: 'nextRecipient.member',
+                select: 'user',
+                populate: {path: 'user', select: 'name email image'}
+            })
+            .populate({
+                path: 'creator',
+                select: 'user role', populate: {path: 'user', select: 'name email image'}
+            })
             .skip(skip).limit(limit).sort({createdAt: -1});
         res.status(200).json({message: `Susu groups retrieved`, data: totalSusu, totalSusuCount});
     } catch (e) {
@@ -165,7 +180,7 @@ exports.getSusu = async (req, res) => {
             .populate({path: 'currentRecipient.member', populate: {path: 'user', select: 'name email image'}})
             .populate({path: 'previousRecipient.member', populate: {path: 'user', select: 'name email image'}})
             .populate({path: 'nextRecipient.member', populate: {path: 'user', select: 'name email image'}})
-            .populate({path: 'creator', select: 'name email image'})
+            .populate({path: 'creator', select: 'user role', populate: {path: 'user', select: 'name email image'}})
             .populate({path: 'paymentOrder.member', populate: {path: "user", select: 'name image'}});
 
         if (!susu)
@@ -189,7 +204,7 @@ exports.updateSusu = async (req, res) => {
         const susu = await Susu.findById(req.params.id);
         if (!susu)
             return res.status(404).json({message: 'Susu not found', data: null});
-        if(susu.status === 'PENDING' && moment().isSameOrAfter(susu.startDate)){
+        if (susu.status === 'PENDING' && moment().isSameOrAfter(susu.startDate)) {
             susu.status = 'STARTED';
             await susu.save();
             res.status(400).json({message: 'Susu already started. No updates can be performed'});
