@@ -4,7 +4,6 @@ const Susu = require('../models/susu');
 const User = require('../models/user');
 const GroupMember = require('../models/group-member');
 const moment = require("moment");
-const Console = require("console");
 
 exports.createSusu = async (req, res) => {
     try {
@@ -79,14 +78,12 @@ exports.createSusu = async (req, res) => {
         let position = 0;
         for (let memberID of susuMembers) {
             // find user associated with memberID
-            console.log(memberID)
             const member = await User.findById(memberID);
             if (member) {
                 // if there's a member, find if the member is part of the group
                 const groupMember = await GroupMember
                     .findOne({user: memberID, group: groupID});
                 if (groupMember) {
-                    console.log(groupMember)
                     nextDate = moment(nextDate).add(intervalAmount, intervalUnit);
                     position++;
                     paymentOrder.push({
@@ -117,9 +114,8 @@ exports.createSusu = async (req, res) => {
         susu.endDate = nextDate;
         susu.paymentOrder = paymentOrder;
         await susu.save();
-        const createdSusu = await Susu.findById(susu._id).populate({
-            path: 'creator'
-        })
+        const createdSusu = await Susu.findById(susu._id)
+            .populate({path: 'creator'})
             .populate({path: "currentRecipient.member", populate: {path: "user", select: 'name image'}})
             .populate({path: "nextRecipient.member"})
             .populate({path: 'group'})
@@ -150,12 +146,12 @@ exports.getSusus = async (req, res) => {
         const totalSusuCount = await Susu.find(match).countDocuments();
         const totalSusu = await Susu.find(match)
             .populate({path: 'group', select: 'name'})
-            .populate({path: 'currentRecipient.member', select: 'name email image'})
-            .populate({path: 'previousRecipient.member', select: 'name email image'})
-            .populate({path: 'nextRecipient.member', select: 'name email image'})
-            .populate({path: 'creator', select: 'name image'})
+            .populate({path: 'currentRecipient.member', select: 'user', populate: {path: 'user', select: 'name email image'}})
+            .populate({path: 'previousRecipient.member', select: 'user', populate: {path: 'user', select: 'name email image'}})
+            .populate({path: 'nextRecipient.member', select: 'user', populate: {path: 'user', select: 'name email image'}})
+            .populate({path: 'creator', select: 'email name'})
             .skip(skip).limit(limit).sort({createdAt: -1});
-        res.status(200).json({message: `Get Cards`, data: totalSusu, totalSusuCount});
+        res.status(200).json({message: `Susu groups retrieved`, data: totalSusu, totalSusuCount});
     } catch (e) {
         res.status(500).json({message: e.message});
     }
@@ -169,7 +165,7 @@ exports.getSusu = async (req, res) => {
             .populate({path: 'currentRecipient.member', populate: {path: 'user', select: 'name email image'}})
             .populate({path: 'previousRecipient.member', populate: {path: 'user', select: 'name email image'}})
             .populate({path: 'nextRecipient.member', populate: {path: 'user', select: 'name email image'}})
-            .populate({path: 'creator', populate: {path: 'user', select: 'name email image'}})
+            .populate({path: 'creator', select: 'name email image'})
             .populate({path: 'paymentOrder.member', populate: {path: "user", select: 'name image'}});
 
         if (!susu)
