@@ -110,7 +110,10 @@ const addPaymentMethod = async (method, ownership, groupID, userID, bankAccount,
                     user: ownership === 'Individual' ? userID : undefined
                 },
                 mobileMoneyAccount: {
-                    provider, name, number: mobileMoneyNumber
+                    provider,
+                    name,
+                    number: mobileMoneyNumber,
+                    last4: mobileMoneyNumber.slice(mobileMoneyNumber.length - 4)
                 }
             });
             if (mobileMoneyPaymentMethod)
