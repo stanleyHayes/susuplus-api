@@ -57,7 +57,7 @@ exports.createSusu = async (req, res) => {
         }
 
         const paymentOrder = [];
-        let nextDate = startDate;
+        let nextDate = moment(startDate).add(intervalAmount, intervalUnit);
 
         const susu = await Susu.create({
             group: groupID,
