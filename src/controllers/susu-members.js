@@ -43,9 +43,7 @@ exports.addSusuMembers = async (req, res) => {
         for (let i = 0; i < users.length; i++) {
             const userID = users[i];
             const user = await User.findById(userID);
-
             if (user) {
-
                 const groupMember = await GroupMember.findOne({group: groupID, user: userID});
                 if (groupMember) {
                     const susuMembers = await SusuMember
@@ -55,7 +53,7 @@ exports.addSusuMembers = async (req, res) => {
 
                     const lastSusuMember = susuMembers[0];
 
-                    const existingSusuMember = SusuMember.findOne(
+                    const existingSusuMember = await SusuMember.findOne(
                         {
                             susu: susuID, group: groupID, user: userID
                         });
