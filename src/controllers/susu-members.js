@@ -27,7 +27,7 @@ exports.addSusuMembers = async (req, res) => {
             return res.status(404).json({message: `Group not found`, data: null});
         if (!susu)
             return res.status(404).json({message: `Susu not found`, data: null});
-        if (moment().isAfter(susu.startDate())) {
+        if (moment().isAfter(susu.startDate)) {
             return res.status(400).json({message: 'Susu has already started'});
         }
 
