@@ -18,56 +18,77 @@ const moment = require("moment");
 
 exports.addSusuMember = async (req, res) => {
     try {
-        const {groupID, userID, susuID} = req.body;
+        const {groupID, users, susuID} = req.body;
         const group = await Group.findById(groupID);
         const susu = await Susu.findById(susuID);
-        const user = await User.findById(userID);
+        let populatedSusuMembers = [];
 
-        if(!group)
+        if (!group)
             return res.status(404).json({message: `Group not found`, data: null});
-        if(!susu)
+        if (!susu)
             return res.status(404).json({message: `Susu not found`, data: null});
-        if(moment().isAfter(susu.startDate())){
+        if (moment().isAfter(susu.startDate())) {
             return res.status(400).json({message: 'Susu has already started'});
         }
-        if(!user)
-            return res.status(404).json({message: `User not found`, data: null});
 
-
-        const groupMember = await GroupMember.findOne({group: groupID, user: userID});
-        if(!groupMember)
-            return res.status(404).json({
-                message: `User is not a member of this group`,
-                data: null});
         const groupMemberAdmin = await GroupMember
             .findOne({user: req.user._id, group: groupID});
 
-        if(!groupMemberAdmin)
+        if (!groupMemberAdmin)
             return res.status(404).json({message: 'You are not a member of this group', data: null});
-        if(groupMemberAdmin.role !== 'ADMIN')
+        if (groupMemberAdmin.role !== 'ADMIN')
             return res.status(403).json({message: 'You do not have the permissions to perform this operation'});
 
-        const susuMembers = await SusuMember
-            .find({group: groupID, susu: susuID})
-            .sort({position: -1})
-            .limit(1);
 
-        const lastSusuMember = susuMembers[0];
+        for (let i = 0; i < users.length; i++) {
+            const userID = users[i];
+            const user = await User.findById(userID);
 
-        const existingSusuMember = SusuMember.findOne({susu: susuID, group: groupID, user: userID});
-        if(existingSusuMember)
-            return res.status(409).json({data: null, message: 'User already exist in susu group'});
+            if (user) {
 
-        const disbursementDate = moment(lastSusuMember.disbursementDate).add(susu.contibutionPlan.interval, susu.contibutionPlan.unit);
-        const newSusuMember = await SusuMember
-            .create({susu: susuID, group: groupID, user: userID, position: lastSusuMember.position + 1, disbursementDate});
+                const groupMember = await GroupMember.findOne({group: groupID, user: userID});
+                if (groupMember) {
+                    const susuMembers = await SusuMember
+                        .find({group: groupID, susu: susuID})
+                        .sort({position: -1})
+                        .limit(1);
 
-        const populatedSusuMember = await SusuMember.findById(newSusuMember._id)
-            .populate({path: 'user', select: 'name email'})
-            .populate({path: 'group', select: 'name'});
+                    const lastSusuMember = susuMembers[0];
 
-        res.status(200).json({message: `Create Susu Member`, data: populatedSusuMember});
-    }catch (e) {
+                    const existingSusuMember = SusuMember.findOne(
+                        {
+                            susu: susuID, group: groupID, user: userID
+                        });
+                    if (existingSusuMember)
+                        return res.status(409).json(
+                            {data: null, message: 'User already exist in susu group'});
+
+                    const disbursementDate = moment(lastSusuMember.disbursementDate)
+                        .add(susu.contibutionPlan.interval, susu.contibutionPlan.unit);
+
+                    const newSusuMember = await SusuMember
+                        .create({
+                            susu: susuID,
+                            group: groupID,
+                            user: userID,
+                            position: lastSusuMember.position + 1,
+                            disbursementDate
+                        });
+
+                    const populatedSusuMember = await SusuMember.findById(newSusuMember._id)
+                        .populate({path: 'user', select: 'name email'})
+                        .populate({path: 'group', select: 'name'});
+                    populatedSusuMembers.push(populatedSusuMember);
+                }
+            }
+        }
+
+        res.status(200).json(
+            {
+                message: `Added ${populatedSusuMembers.length} members to susu`,
+                data: populatedSusuMembers
+            });
+    } catch (e) {
         res.status(500).json({message: e.message});
     }
 }
@@ -78,12 +99,12 @@ exports.getSusuMembers = async (req, res) => {
     try {
         const {susu: susuID} = req.query;
         const susu = await Susu.findById(susuID);
-        if(!susu)
+        if (!susu)
             return res.status(404).json({message: 'Susu not found'});
         const members = await SusuMember.find({susu: susuID})
             .populate({path: 'member', populate: {path: 'user', select: 'name image'}});
         res.status(200).json({message: `Get Susu Members`, data: members});
-    }catch (e) {
+    } catch (e) {
         res.status(500).json({message: e.message});
     }
 }
@@ -93,7 +114,7 @@ exports.getSusuMembers = async (req, res) => {
 exports.getSusuMember = async (req, res) => {
     try {
         res.status(200).json({message: `Get Susu Member`, data: {}});
-    }catch (e) {
+    } catch (e) {
         res.status(500).json({message: e.message});
     }
 }
@@ -107,7 +128,7 @@ exports.getSusuMember = async (req, res) => {
 exports.removeSusuMember = async (req, res) => {
     try {
         res.status(200).json({message: `Delete Susu Member`, data: {}});
-    }catch (e) {
+    } catch (e) {
         res.status(500).json({message: e.message});
     }
 }
@@ -122,10 +143,14 @@ exports.getSusuOfUser = async (req, res) => {
             .find({user: userID, status: {'$ne': 'REMOVED'}})
             .populate({
                 path: 'susu',
-                select:'contributionPlan currentRecipient paymentPlan status startDate endDate group',
-                populate: {path: 'currentRecipient.member', select: 'user', populate: {path: 'user', select: 'image name'}}
+                select: 'contributionPlan currentRecipient paymentPlan status startDate endDate group',
+                populate: {
+                    path: 'currentRecipient.member',
+                    select: 'user',
+                    populate: {path: 'user', select: 'image name'}
+                }
             })
-            .populate({path: 'group', select:'image name description'});
+            .populate({path: 'group', select: 'image name description'});
 
         res.status(200).json({
             message: `${susu.length} susu groups acquired`,
