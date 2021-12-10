@@ -16,7 +16,7 @@ const moment = require("moment");
 * Add user to payment order
 * */
 
-exports.addSusuMember = async (req, res) => {
+exports.addSusuMembers = async (req, res) => {
     try {
         const {groupID, users, susuID} = req.body;
         const group = await Group.findById(groupID);

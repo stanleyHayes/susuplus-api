@@ -88,6 +88,10 @@ const susuSchema = new Schema({
     endDate: {
         type: Date
     },
+    regulations: {
+        type: [String],
+        required: true
+    },
     status: {
         type: String,
         enum: ['STARTED', 'PAUSED', 'STOPPED', 'PENDING', 'COMPLETED'],

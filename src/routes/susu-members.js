@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router({mergeParams: true});
 
 const {
-    addSusuMember,
+    addSusuMembers,
     getSusuMember,
     getSusuMembers,
     removeSusuMember,
@@ -11,7 +11,7 @@ const {
 const {authenticate} = require("../middleware/authentication");
 
 router.route('/')
-    .post(authenticate, addSusuMember)
+    .post(authenticate, addSusuMembers)
     .get(authenticate, getSusuMembers);
 
 router.route('/:id')
