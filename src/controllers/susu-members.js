@@ -75,7 +75,7 @@ exports.addSusuMembers = async (req, res) => {
                         });
 
                     const populatedSusuMember = await SusuMember.findById(newSusuMember._id)
-                        .populate({path: 'user', select: 'name email'})
+                        .populate({path: 'member', populate: {path: 'user', select: 'name image'}})
                         .populate({path: 'group', select: 'name'});
                     populatedSusuMembers.push(populatedSusuMember);
                 }
