@@ -70,7 +70,8 @@ exports.addSusuMembers = async (req, res) => {
                             group: groupID,
                             user: userID,
                             position: lastSusuMember.position + 1,
-                            disbursementDate
+                            disbursementDate,
+                            member: groupMember._id
                         });
 
                     const populatedSusuMember = await SusuMember.findById(newSusuMember._id)
