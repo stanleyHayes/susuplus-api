@@ -62,7 +62,7 @@ exports.addSusuMembers = async (req, res) => {
                             {data: null, message: 'User already exist in susu group'});
 
                     const disbursementDate = moment(lastSusuMember.disbursementDate)
-                        .add(susu.contibutionPlan.interval, susu.contibutionPlan.unit);
+                        .add(susu.contributionPlan.interval, susu.contributionPlan.unit);
 
                     const newSusuMember = await SusuMember
                         .create({
