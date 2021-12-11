@@ -9,14 +9,14 @@ exports.addPaymentMethod = async (req, res) => {
     try {
         const {method, ownership} = req.body;
 
-        if(ownership === 'Group'){
+        if (ownership === 'Group') {
             const group = await Group.findById(req.body.groupID);
-            if(!group)
+            if (!group)
                 return res.status(404).json({message: 'Group not found'});
             const groupMember = await GroupMember.findOne({group: req.body.groupID, user: req.user._id});
-            if(!groupMember)
+            if (!groupMember)
                 return res.status(403).json({message: 'You are not a member of this group'});
-            if(groupMember.role !== 'ADMIN')
+            if (groupMember.role !== 'ADMIN')
                 return res.status(403).json({message: 'You do no have the permissions to perform this operation'});
         }
 
@@ -29,14 +29,14 @@ exports.addPaymentMethod = async (req, res) => {
                 return res.status(400).json({message: 'Invalid mobile phone'});
 
             const {status, message, data} = await verifyBankAccount(accountNumber, bankCode);
-            if(!status && !data)
+            if (!status && !data)
                 return res.status(400).json({message});
             const bankAccountPaymentMethod = await PaymentMethod.create({
                 method,
                 owner: {
                     type: ownership,
-                    group: ownership === 'Group' ? req.body.groupID: undefined,
-                    user: ownership === 'Individual' ? req.user._id: undefined
+                    group: ownership === 'Group' ? req.body.groupID : undefined,
+                    user: ownership === 'Individual' ? req.user._id : undefined
                 },
                 bankAccount: {
                     bankName,
@@ -49,7 +49,7 @@ exports.addPaymentMethod = async (req, res) => {
                 }
             });
 
-            if(bankAccountPaymentMethod)
+            if (bankAccountPaymentMethod)
                 return res.status(200).json({message: "Bank Account Added", data: bankAccountPaymentMethod});
 
         } else if (method === 'Card') {
@@ -59,13 +59,13 @@ exports.addPaymentMethod = async (req, res) => {
             switch (cardNumber[0]) {
                 case '4':
                     network = 'Visa';
-                    if(cardNumber.length !== 16 && cardNumber.length !== 13)
+                    if (cardNumber.length !== 16 && cardNumber.length !== 13)
                         return res.status(400).json({message: 'Invalid MasterCard'});
                     break;
 
                 case '5':
                     network = 'MasterCard';
-                    if(cardNumber.length !== 16)
+                    if (cardNumber.length !== 16)
                         return res.status(400).json({message: 'Invalid MasterCard'});
                     break;
 
@@ -76,14 +76,14 @@ exports.addPaymentMethod = async (req, res) => {
                         return res.status(400).json({message: 'Invalid American Express Card'});
             }
             const [expiryMonth, expiryYear] = expiryDate.split("/");
-            if(!expiryMonth)
+            if (!expiryMonth)
                 return res.status(400).json({message: 'Invalid expiry month'});
-            if(parseInt(expiryMonth) < 1 || parseInt(expiryMonth) > 12)
+            if (parseInt(expiryMonth) < 1 || parseInt(expiryMonth) > 12)
                 return res.status(400).json({message: 'Invalid month'});
 
-            if(!expiryYear)
+            if (!expiryYear)
                 return res.status(400).json({message: 'Invalid year'});
-            if(parseInt(expiryYear) < new Date().getFullYear())
+            if (parseInt(expiryYear) < new Date().getFullYear())
                 return res.status(400).json({message: 'Card expired'});
 
 
@@ -91,8 +91,8 @@ exports.addPaymentMethod = async (req, res) => {
                 method,
                 owner: {
                     type: ownership,
-                    group: ownership === 'Group' ? req.body.groupID: undefined,
-                    user: ownership === 'Individual' ? req.user._id: undefined
+                    group: ownership === 'Group' ? req.body.groupID : undefined,
+                    user: ownership === 'Individual' ? req.user._id : undefined
                 },
                 cardDetail: {
                     bankIssuer,
@@ -107,25 +107,28 @@ exports.addPaymentMethod = async (req, res) => {
                 }
             });
 
-            if(cardPaymentMethod)
+            if (cardPaymentMethod)
                 return res.status(201).json({message: 'Card details added', data: cardPaymentMethod});
         } else if (method === 'Mobile Money') {
             const {mobileMoneyNumber, provider, name} = req.body;
-            if(!validator.isMobilePhone(mobileMoneyNumber)){
+            if (!validator.isMobilePhone(mobileMoneyNumber)) {
                 return res.status(400).json({message: 'Invalid mobile number'});
             }
             const mobileMoneyPaymentMethod = await PaymentMethod.create({
                 method: 'Mobile Money',
                 owner: {
                     type: ownership,
-                    group: ownership === 'Group' ? req.body.groupID: undefined,
-                    user: ownership === 'Individual' ? req.user._id: undefined
+                    group: ownership === 'Group' ? req.body.groupID : undefined,
+                    user: ownership === 'Individual' ? req.user._id : undefined
                 },
                 mobileMoneyAccount: {
-                    provider, name, number: mobileMoneyNumber
+                    provider,
+                    name,
+                    number: mobileMoneyNumber,
+                    last4: mobileMoneyNumber.slice(mobileMoneyNumber.length - 4),
                 }
             });
-            if(mobileMoneyPaymentMethod)
+            if (mobileMoneyPaymentMethod)
                 return res.status(201).json({message: 'Mobile money account created', data: mobileMoneyPaymentMethod});
         } else {
             return res.status(400).json({message: 'Unknown payment method'});
@@ -149,12 +152,12 @@ exports.getPaymentMethod = async (req, res) => {
         const {ownership} = req.query;
         const {id} = req.params;
         let paymentMethod
-        if(ownership === 'Individual'){
+        if (ownership === 'Individual') {
             paymentMethod = await PaymentMethod.findOne({"owner.user": req.user.id, _id: id})
                 .populate({path: 'owner.user', select: 'name image'});
-        }else if(ownership === 'Group'){
+        } else if (ownership === 'Group') {
             const groupMember = await GroupMember.findOne({group: req.query.group, user: req.user._id, _id: id});
-            if(!groupMember)
+            if (!groupMember)
                 return res.status(403).json({message: 'You are not a member of this group'});
             paymentMethod = await PaymentMethod.find({"owner.group": req.query.group})
                 .populate({path: 'owner.group', select: 'name image'});
@@ -169,12 +172,12 @@ exports.getPaymentMethods = async (req, res) => {
     try {
         const {ownership} = req.query;
         let paymentMethods;
-        if(ownership === 'Individual'){
+        if (ownership === 'Individual') {
             paymentMethods = await PaymentMethod.find({"owner.user": req.user.id})
                 .populate({path: 'owner.user', select: 'name image'});
-        }else if(ownership === 'Group'){
+        } else if (ownership === 'Group') {
             const groupMember = await GroupMember.findOne({group: req.query.group, user: req.user._id});
-            if(!groupMember)
+            if (!groupMember)
                 return res.status(403).json({message: 'You are not a member of this group'});
             paymentMethods = await PaymentMethod.find({"owner.group": req.query.group})
                 .populate({path: 'owner.group', select: 'name image'});
