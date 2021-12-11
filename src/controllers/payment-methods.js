@@ -28,9 +28,9 @@ exports.addPaymentMethod = async (req, res) => {
             if (!validator.isMobilePhone(mobileNumber))
                 return res.status(400).json({message: 'Invalid mobile phone'});
 
-            const {status, message, data} = await verifyBankAccount(accountNumber, bankCode);
-            if (!status && !data)
-                return res.status(400).json({message});
+            // const {status, message, data} = await verifyBankAccount(accountNumber, bankCode);
+            // if (!status && !data)
+            //     return res.status(400).json({message});
             const bankAccountPaymentMethod = await PaymentMethod.create({
                 method,
                 owner: {
@@ -52,7 +52,8 @@ exports.addPaymentMethod = async (req, res) => {
             if (bankAccountPaymentMethod)
                 return res.status(200).json({message: "Bank Account Added", data: bankAccountPaymentMethod});
 
-        } else if (method === 'Card') {
+        }
+        else if (method === 'Card') {
             const {bankIssuer, cvv, cardHolderName, expiryDate, cardNumber} = req.body;
             let network;
 
@@ -106,7 +107,8 @@ exports.addPaymentMethod = async (req, res) => {
 
             if (cardPaymentMethod)
                 return res.status(201).json({message: 'Card details added', data: cardPaymentMethod});
-        } else if (method === 'Mobile Money') {
+        }
+        else if (method === 'Mobile Money') {
             const {mobileMoneyNumber, provider, name} = req.body;
             if (!validator.isMobilePhone(mobileMoneyNumber)) {
                 return res.status(400).json({message: 'Invalid mobile number'});
