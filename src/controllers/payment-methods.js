@@ -83,9 +83,6 @@ exports.addPaymentMethod = async (req, res) => {
 
             if (!expiryYear)
                 return res.status(400).json({message: 'Invalid year'});
-            if (parseInt(expiryYear) < new Date().getFullYear())
-                return res.status(400).json({message: 'Card expired'});
-
 
             const cardPaymentMethod = await PaymentMethod.create({
                 method,
