@@ -153,12 +153,16 @@ exports.updateProfile = async (req, res) => {
             return res.status(400).json({message: 'Updates not allowed', data: null});
         for (let key of updates) {
             if (key === 'email') {
+                if(req.body['email'] === req.user.email)
+                    continue;
                 const user = await User.findOne({email: req.body['email']});
                 if (!user)
                     req.user['email'] = req.body['email'];
                 else
                     return res.status(409).json({data: null, message: `Email already taken`});
             } else if (key === 'phone') {
+                if(req.body['phone'] === req.user.phone)
+                    continue;
                 const user = await User.findOne({phone: req.body['phone']});
                 if (!user)
                     req.user['phone'] = req.body['phone'];
