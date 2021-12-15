@@ -2,7 +2,7 @@ const PaymentMethod = require("../models/payment-method");
 const Group = require("../models/group");
 const GroupMember = require("../models/group-member");
 const validator = require("validator");
-const {verifyBankAccount} = require("../utils/paystack");
+const {verifyAccount, createTransferReceipt} = require("../utils/paystack");
 
 
 exports.addPaymentMethod = async (req, res) => {
@@ -22,17 +22,19 @@ exports.addPaymentMethod = async (req, res) => {
 
 
         if (method === 'Bank Account') {
-            const {bankName, accountNumber, bankCode, accountBranch, mobileNumber, accountName} = req.body;
+            const {bankName, accountNumber, bankCode, accountBranch, mobileNumber, accountName, currency} = req.body;
             if (!bankName || !accountNumber || !bankCode || !accountBranch || !mobileNumber || !accountName)
                 return res.status(400).json({message: 'Missing required fields'});
             if (!validator.isMobilePhone(mobileNumber))
                 return res.status(400).json({message: 'Invalid mobile phone'});
 
-            // const {status, message, data} = await verifyBankAccount(accountNumber, bankCode);
-            // if (!status && !data)
-            //     return res.status(400).json({message});
+            const {status, message, data} = await verifyAccount(accountNumber, bankCode);
+            const transferReceiptResponse = await createTransferReceipt(accountName, accountNumber, currency, bankCode)
+            if (!status && !data)
+                return res.status(400).json({message});
             const bankAccountPaymentMethod = await PaymentMethod.create({
                 method,
+                responseCode: transferReceiptResponse.recipient_code,
                 owner: {
                     type: ownership,
                     group: ownership === 'Group' ? req.body.groupID : undefined,

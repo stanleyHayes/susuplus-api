@@ -57,7 +57,7 @@ exports.createCharge = async (email, amount, currency, bank, mobile_money, card,
     }
 }
 
-exports.verifyBankAccount = async (accountNumber, bankCode) => {
+exports.verifyAccount = async (accountNumber, bankCode) => {
     try {
         const response = await axios({
             method: 'GET',
@@ -67,10 +67,53 @@ exports.verifyBankAccount = async (accountNumber, bankCode) => {
                 'Content-Type': 'application/json'
             }
         });
-        console.log(response.data);
         return response.data;
     } catch (e) {
-        console.log(e.message)
+        return {message: 'Something Went wrong', data: null, status: false};
+    }
+}
+
+exports.transfer = async (recipient, amount, currency, reason) => {
+    try {
+        const response = await axios({
+            method: 'POST',
+            url: `https://api.paystack.co/transfer`,
+            headers: {
+                Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            data: {
+                source: 'transfer',
+                currency,
+                reason,
+                recipient,
+                amount: amount * 100
+            }
+        });
+
+        return response.data
+    } catch (e) {
+        return {message: 'Something Went wrong', data: null, status: false};
+    }
+}
+
+exports.createTransferReceipt = async (name, account_number, currency, bank_code) => {
+    try {
+        return await axios({
+            method: 'POST',
+            url: `https://api.paystack.co/transferrecipient`,
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`
+            },
+            data: {
+                name,
+                account_number,
+                currency,
+                bank_code
+            }
+        });
+    } catch (e) {
         return {message: 'Something Went wrong', data: null, status: false};
     }
 }

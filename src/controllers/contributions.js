@@ -5,7 +5,9 @@ const {sendEmail} = require("../utils/emails");
 const PaymentMethod = require("../models/payment-method");
 const Susu = require("../models/susu");
 const moment = require("moment");
-const {createCharge} = require("../utils/paystack");
+const {createCharge, transfer} = require("../utils/paystack");
+const Percentage = require("../models/percentage");
+const SusuMember = require("../models/susu-member");
 
 exports.createContribution = async (req, res) => {
     try {
@@ -15,7 +17,8 @@ exports.createContribution = async (req, res) => {
             paymentMethod,
             sourceAccount,
             destinationAccount,
-            round
+            round,
+            reason
         } = req.body;
         const group = await Group.findById(groupID);
         if (!group)
@@ -34,14 +37,30 @@ exports.createContribution = async (req, res) => {
         }
         const amount = susu.paymentPlan.amount;
         const currency = susu.paymentPlan.currency;
+
+        const paidContribution = await Contribution.findOne({
+            round,
+            susu: susuID,
+            group: groupID,
+            contributor: req.user._id
+        });
+
+        if (paidContribution)
+            return res.status(409).json({message: 'Contribution already made'});
+
         let paymentDetails;
         let chargeResponse = null;
         if (!groupMember)
             return res.status(404).json({message: `User does not belong to the group`});
-        //MAKE PAYMENT HERE AND RETURN THE PAYMENT DETAILS
+
+        const recipientAccount = await PaymentMethod.findById(sourceAccount);
+        if (!recipientAccount)
+            return res.status(404).json({message: `${paymentMethod} not found`});
+
         switch (paymentMethod) {
             case 'Mobile Money':
-                const mobileMoneyAccount = await PaymentMethod.findOne({_id: sourceAccount, method: paymentMethod});
+                const mobileMoneyAccount = await PaymentMethod.findOne(
+                    {_id: sourceAccount, method: paymentMethod});
                 if (!mobileMoneyAccount)
                     return res.status(404).json({message: 'Mobile Money Account not found'});
                 chargeResponse = await createCharge(
@@ -52,8 +71,11 @@ exports.createContribution = async (req, res) => {
                     {phone: mobileMoneyAccount.number, provider: mobileMoneyAccount.provider},
                     null,
                     'Mobile Money');
-                paymentDetails = chargeResponse.data;
+                if (!chargeResponse.status)
+                    return res.status(400).json({message: 'Payment failed'});
+                paymentDetails = {...chargeResponse.data};
                 break;
+
             case 'Card':
                 const cardPaymentMethod = await PaymentMethod.findOne({_id: sourceAccount, method: paymentMethod});
                 if (!cardPaymentMethod)
@@ -71,10 +93,16 @@ exports.createContribution = async (req, res) => {
                         cvv: cardPaymentMethod.cardDetail.cvv
                     },
                     'Card');
+                if (!chargeResponse.status)
+                    return res.status(400).json({message: 'Payment failed'});
                 paymentDetails = chargeResponse.data;
                 break;
+
             case 'Bank Account':
-                const bankAccountPaymentMethod = await PaymentMethod.findOne({_id: sourceAccount, method: paymentMethod});
+                const bankAccountPaymentMethod = await PaymentMethod.findOne({
+                    _id: sourceAccount,
+                    method: paymentMethod
+                });
                 if (!bankAccountPaymentMethod)
                     return res.status(404).json({message: 'Bank Account not found', data: null});
                 chargeResponse = await createCharge(
@@ -88,9 +116,23 @@ exports.createContribution = async (req, res) => {
                     null,
                     null,
                     'Bank Account');
+                if (!chargeResponse.status)
+                    return res.status(400).json({message: 'Payment failed'});
                 paymentDetails = chargeResponse.data;
                 break;
         }
+
+        const percentage = await Percentage.findOne({});
+        const payableAmount = amount - (amount * percentage.percentage / 100)
+
+        const transferResponse = await transfer(
+            recipientAccount.recipientCode,
+            payableAmount,
+            currency,
+            reason)
+
+        if (!transferResponse.status)
+            return res.status(400).json({message: transferResponse.message});
 
         const contribution = await Contribution.create({
             group: group._id,
@@ -99,22 +141,23 @@ exports.createContribution = async (req, res) => {
             round,
             sourcePaymentMethod: sourceAccount,
             destinationPaymentMethod: destinationAccount,
-            paymentDetails
+            paymentDetails,
+            susu: susuID
         });
 
-
         // Send each group member an email that a contribution has been made
-        const groupMembers = await GroupMember.find({group: groupID})
+        const susuMembers = await SusuMember.find({susu: susuID})
             .populate({path: 'user', select: 'name email image'})
             .populate({path: group, select: 'name'});
 
-        for (let i = 0; i < groupMembers.length; i++) {
-            if (groupMember.user._id !== req.user._id) {
+        for (let i = 0; i < susuMembers.length; i++) {
+            const susuMember = susuMembers[i];
+            if (susuMember.user._id !== req.user._id) {
                 const message = `A contribution of ${amount.value} ${amount.currency} has been made by ${req.user.name} towards a group ${group.name} to which you are a member of.`;
-                await sendEmail(groupMember.user.email, 'CONTRIBUTION TOWARDS SUSU', message);
-            } else if (groupMember.user._id === req.user._id) {
+                await sendEmail(susuMember.user.email, 'CONTRIBUTION TOWARDS SUSU', message);
+            } else if (susuMember.user._id === req.user._id) {
                 const message = `You made a contribution of ${amount.value} ${amount.currency} towards the group ${group.name} to which you are a member of.`;
-                await sendEmail(groupMember.user.email, 'CONTRIBUTION TOWARDS SUSU', message);
+                await sendEmail(susuMember.user.email, 'CONTRIBUTION TOWARDS SUSU', message);
             }
         }
 
@@ -126,6 +169,7 @@ exports.createContribution = async (req, res) => {
             message: `Contribution made by ${req.user.name} towards group ${group.name}`,
             data: populatedContribution
         });
+
     } catch (e) {
         res.status(500).json({message: e.message});
     }

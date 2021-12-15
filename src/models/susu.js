@@ -9,6 +9,10 @@ const susuSchema = new Schema({
         required: true
     },
     currentRecipient: {
+        user: {
+            type: Schema.Types.ObjectId,
+            ref: 'User'
+        },
         member: {
             type: Schema.Types.ObjectId,
             ref: 'GroupMember'
@@ -19,6 +23,10 @@ const susuSchema = new Schema({
 
     },
     previousRecipient: {
+        user: {
+            type: Schema.Types.ObjectId,
+            ref: 'User'
+        },
         member: {
             type: Schema.Types.ObjectId,
             ref: 'GroupMember'
@@ -28,6 +36,10 @@ const susuSchema = new Schema({
         }
     },
     nextRecipient: {
+        user: {
+            type: Schema.Types.ObjectId,
+            ref: 'User'
+        },
         member: {
             type: Schema.Types.ObjectId,
             ref: 'GroupMember'
@@ -58,6 +70,11 @@ const susuSchema = new Schema({
     paymentOrder: {
         type: [
             {
+                user: {
+                    type: Schema.Types.ObjectId,
+                    ref: 'User',
+                    required: true
+                },
                 member: {
                     type: Schema.Types.ObjectId,
                     ref: 'GroupMember',

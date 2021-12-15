@@ -9,6 +9,9 @@ const paymentMethodSchema = new Schema({
         enum: ['Bank Account', 'Card', 'Mobile Money'],
         required: true
     },
+    recipientCode: {
+        type: String
+    },
     owner: {
         type: {
             type: String,
@@ -90,8 +93,8 @@ const paymentMethodSchema = new Schema({
             mobileNumber: {
                 type: String,
                 required: true,
-                validate(value){
-                    if(!validator.isMobilePhone(value)){
+                validate(value) {
+                    if (!validator.isMobilePhone(value)) {
                         throw new Error(`Invalid phone ${value}`);
                     }
                 }
@@ -113,8 +116,8 @@ const paymentMethodSchema = new Schema({
             },
             number: {
                 type: String,
-                validate(value){
-                    if(!validator.isMobilePhone(value)){
+                validate(value) {
+                    if (!validator.isMobilePhone(value)) {
                         throw new Error(`Invalid phone ${value}`);
                     }
                 }
@@ -124,6 +127,10 @@ const paymentMethodSchema = new Schema({
                 required: true
             },
             last4: {
+                type: String,
+                required: true
+            },
+            code: {
                 type: String,
                 required: true
             }
