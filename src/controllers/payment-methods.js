@@ -139,6 +139,7 @@ exports.addPaymentMethod = async (req, res) => {
 
             const mobileMoneyPaymentMethod = await PaymentMethod.create({
                 method: 'Mobile Money',
+                recipientCode: transferReceiptResponse.data.data.recipient_code,
                 owner: {
                     type: ownership,
                     group: ownership === 'Group' ? req.body.groupID : undefined,
