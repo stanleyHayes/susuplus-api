@@ -28,10 +28,14 @@ exports.addPaymentMethod = async (req, res) => {
             if (!validator.isMobilePhone(mobileNumber))
                 return res.status(400).json({message: 'Invalid mobile phone'});
 
-            const {status, message, data} = await verifyAccount(accountNumber, bankCode);
+            const accountVerificationResponse = await verifyAccount(accountNumber, bankCode);
+            if(!accountVerificationResponse.status)
+                return res.status(400).json({message: accountVerificationResponse.message});
+
             const transferReceiptResponse = await createTransferReceipt(accountName, accountNumber, currency, bankCode)
-            if (!status && !data)
-                return res.status(400).json({message});
+            if (!transferReceiptResponse.status && !transferReceiptResponse.data)
+                return res.status(400).json({message: accountVerificationResponse.message});
+
             const bankAccountPaymentMethod = await PaymentMethod.create({
                 method,
                 responseCode: transferReceiptResponse.recipient_code,
@@ -112,9 +116,25 @@ exports.addPaymentMethod = async (req, res) => {
         }
         else if (method === 'Mobile Money') {
             const {mobileMoneyNumber, provider, name} = req.body;
+            let code;
+            if(provider === 'mtn')
+                code = 'MTN';
+            else if(provider === 'tgo')
+                code = 'TGO';
+            else if(provider === 'vod')
+                code = 'VOD';
             if (!validator.isMobilePhone(mobileMoneyNumber)) {
                 return res.status(400).json({message: 'Invalid mobile number'});
             }
+
+            const accountVerificationResponse = await verifyAccount(mobileMoneyNumber, code);
+            if(!accountVerificationResponse.status)
+                return res.status(400).json({message: accountVerificationResponse.message});
+
+            const transferReceiptResponse = await createTransferReceipt(name, mobileMoneyNumber, 'GHS', code)
+            if (!transferReceiptResponse.status && !transferReceiptResponse.data)
+                return res.status(400).json({message: accountVerificationResponse.message});
+
             const mobileMoneyPaymentMethod = await PaymentMethod.create({
                 method: 'Mobile Money',
                 owner: {
@@ -123,6 +143,7 @@ exports.addPaymentMethod = async (req, res) => {
                     user: ownership === 'Individual' ? req.user._id : undefined
                 },
                 mobileMoneyAccount: {
+                    code,
                     provider,
                     name,
                     number: mobileMoneyNumber,

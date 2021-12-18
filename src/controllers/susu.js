@@ -87,6 +87,7 @@ exports.createSusu = async (req, res) => {
                     nextDate = moment(nextDate).add(intervalAmount, intervalUnit);
                     position++;
                     paymentOrder.push({
+                        user: memberID,
                         member: groupMember._id,
                         position,
                         disbursementDate: nextDate
