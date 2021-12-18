@@ -131,11 +131,11 @@ exports.addPaymentMethod = async (req, res) => {
 
             const accountVerificationResponse = await verifyAccount(mobileMoneyNumber, code);
             if(!accountVerificationResponse.status)
-                return res.status(400).json({message: accountVerificationResponse.message});
+                return res.status(400).json({message: 'Account verification failed'});
 
             const transferReceiptResponse = await createTransferReceipt(name, mobileMoneyNumber, 'GHS', code)
             if (!transferReceiptResponse.status && !transferReceiptResponse.data)
-                return res.status(400).json({message: accountVerificationResponse.message});
+                return res.status(400).json({message: 'could not create transfer receipt'});
 
             const mobileMoneyPaymentMethod = await PaymentMethod.create({
                 method: 'Mobile Money',
