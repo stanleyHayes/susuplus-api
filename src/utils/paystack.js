@@ -98,6 +98,8 @@ exports.transfer = async (recipient, amount, currency, reason) => {
 }
 
 exports.createTransferReceipt = async (name, account_number, currency, bank_code) => {
+
+    console.log(name, account_number, currency, bank_code)
     try {
         return await axios({
             method: 'POST',
@@ -114,6 +116,6 @@ exports.createTransferReceipt = async (name, account_number, currency, bank_code
             }
         });
     } catch (e) {
-        return {message: 'Something Went wrong', data: null, status: false};
+        return {message: e.message, data: null, status: false};
     }
 }

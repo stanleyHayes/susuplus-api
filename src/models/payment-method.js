@@ -65,6 +65,10 @@ const paymentMethodSchema = new Schema({
             expiryDate: {
                 type: String,
                 required: true
+            },
+            currency: {
+                type: String,
+                required: true
             }
         }
     },
@@ -103,6 +107,10 @@ const paymentMethodSchema = new Schema({
                 type: String,
                 minlength: 4,
                 maxlength: 4,
+                required: true
+            },
+            currency: {
+                type: String,
                 required: true
             }
         }

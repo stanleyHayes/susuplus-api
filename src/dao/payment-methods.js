@@ -121,6 +121,7 @@ const addPaymentMethod = async (method, ownership, groupID, userID, bankAccount,
                 return {code: 400, message: 'could not create transfer receipt', data: null, success: false};
 
             const mobileMoneyPaymentMethod = await PaymentMethod.create({
+                recipientCode: transferReceiptResponse.data.data.recipient_code,
                 method: 'Mobile Money',
                 owner: {
                     type: ownership,

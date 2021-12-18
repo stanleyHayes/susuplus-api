@@ -22,7 +22,7 @@ exports.addPaymentMethod = async (req, res) => {
 
 
         if (method === 'Bank Account') {
-            const {bankName, accountNumber, bankCode, accountBranch, mobileNumber, accountName, currency} = req.body;
+            const {bankName, accountNumber, bankCode, accountBranch, mobileNumber, accountName, bankCurrency} = req.body;
             if (!bankName || !accountNumber || !bankCode || !accountBranch || !mobileNumber || !accountName)
                 return res.status(400).json({message: 'Missing required fields'});
             if (!validator.isMobilePhone(mobileNumber))
@@ -32,13 +32,13 @@ exports.addPaymentMethod = async (req, res) => {
             if(!accountVerificationResponse.status)
                 return res.status(400).json({message: accountVerificationResponse.message});
 
-            const transferReceiptResponse = await createTransferReceipt(accountName, accountNumber, currency, bankCode)
+            const transferReceiptResponse = await createTransferReceipt(accountName, accountNumber, bankCurrency, bankCode)
             if (!transferReceiptResponse.status && !transferReceiptResponse.data)
                 return res.status(400).json({message: accountVerificationResponse.message});
 
             const bankAccountPaymentMethod = await PaymentMethod.create({
                 method,
-                responseCode: transferReceiptResponse.recipient_code,
+                recipientCode: transferReceiptResponse.data.data.recipient_code,
                 owner: {
                     type: ownership,
                     group: ownership === 'Group' ? req.body.groupID : undefined,
@@ -51,7 +51,8 @@ exports.addPaymentMethod = async (req, res) => {
                     accountBranch,
                     mobileNumber,
                     accountName,
-                    last4: accountNumber.slice(accountNumber.length - 4)
+                    last4: accountNumber.slice(accountNumber.length - 4),
+                    currency: bankCurrency
                 }
             });
 
@@ -60,7 +61,7 @@ exports.addPaymentMethod = async (req, res) => {
 
         }
         else if (method === 'Card') {
-            const {bankIssuer, cvv, cardHolderName, expiryDate, cardNumber} = req.body;
+            const {bankIssuer, cvv, cardHolderName, expiryDate, cardNumber, cardCurrency} = req.body;
             let network;
 
             switch (cardNumber[0]) {
@@ -107,7 +108,8 @@ exports.addPaymentMethod = async (req, res) => {
                     expiryYear,
                     number: cardNumber,
                     network,
-                    expiryDate
+                    expiryDate,
+                    currency: cardCurrency
                 }
             });
 
