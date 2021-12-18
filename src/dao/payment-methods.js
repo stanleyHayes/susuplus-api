@@ -1,8 +1,8 @@
 const validator = require("validator");
-const {verifyBankAccount, verifyAccount, createTransferReceipt} = require("../utils/paystack");
+const {verifyAccount, createTransferReceipt} = require("../utils/paystack");
 const PaymentMethod = require("../models/payment-method");
 
-const addPaymentMethod = async (method, ownership, groupID, userID, bankAccount, card) => {
+const addPaymentMethod = async (method, ownership, groupID, userID, bankAccount, card, mobileMoneyAccount) => {
     try {
         if (method === 'Bank Account') {
             const {bankName, accountNumber, bankCode, accountBranch, mobileNumber, accountName, currency} = bankAccount;
@@ -13,12 +13,12 @@ const addPaymentMethod = async (method, ownership, groupID, userID, bankAccount,
                 return {code: 400, message: 'Invalid mobile phone', data: null, success: false}
 
             const accountVerificationResponse = await verifyAccount(accountNumber, bankCode);
-            if(!accountVerificationResponse.status)
-                return res.status(400).json({message: accountVerificationResponse.message});
+            if (!accountVerificationResponse.status)
+                return {code: 400, message: 'Account could not be verified', data: null, success: false}
 
             const transferReceiptResponse = await createTransferReceipt(accountName, accountNumber, currency, bankCode)
             if (!transferReceiptResponse.status && !transferReceiptResponse.data)
-                return res.status(400).json({message: accountVerificationResponse.message});
+                return {code: 400, message: `Transfer receipt could not be created`, data: null, success: false}
 
             const bankAccountPaymentMethod = await PaymentMethod.create({
                 method,
@@ -100,32 +100,32 @@ const addPaymentMethod = async (method, ownership, groupID, userID, bankAccount,
                 return {code: 201, message: 'Card details added', data: cardPaymentMethod, success: true};
 
         } else if (method === 'Mobile Money') {
-            const {mobileMoneyNumber, provider, name} = req.body;
+            const {mobileMoneyNumber, provider, name} = mobileMoneyAccount;
             let code;
-            if(provider === 'mtn')
+            if (provider === 'mtn')
                 code = 'MTN';
-            else if(provider === 'tgo')
+            else if (provider === 'tgo')
                 code = 'TGO';
-            else if(provider === 'vod')
+            else if (provider === 'vod')
                 code = 'VOD';
             if (!validator.isMobilePhone(mobileMoneyNumber)) {
-                return res.status(400).json({message: 'Invalid mobile number'});
+                return {code: 400, message: 'Invalid mobile number', data: null, success: false};
             }
 
             const accountVerificationResponse = await verifyAccount(mobileMoneyNumber, code);
-            if(!accountVerificationResponse.status)
-                return res.status(400).json({message: accountVerificationResponse.message});
+            if (!accountVerificationResponse.status)
+                return {code: 400, message: 'Could not verify account', data: null, success: false};
 
             const transferReceiptResponse = await createTransferReceipt(name, mobileMoneyNumber, 'GHS', code)
             if (!transferReceiptResponse.status && !transferReceiptResponse.data)
-                return res.status(400).json({message: accountVerificationResponse.message});
+                return {code: 400, message: 'could not create transfer receipt', data: null, success: false};
 
             const mobileMoneyPaymentMethod = await PaymentMethod.create({
                 method: 'Mobile Money',
                 owner: {
                     type: ownership,
-                    group: ownership === 'Group' ? req.body.groupID : undefined,
-                    user: ownership === 'Individual' ? req.user._id : undefined
+                    group: ownership === 'Group' ? groupID : undefined,
+                    user: ownership === 'Individual' ? userID : undefined
                 },
                 mobileMoneyAccount: {
                     code,
@@ -135,13 +135,14 @@ const addPaymentMethod = async (method, ownership, groupID, userID, bankAccount,
                     last4: mobileMoneyNumber.slice(mobileMoneyNumber.length - 4),
                 }
             });
+
             if (mobileMoneyPaymentMethod)
-                return res.status(201).json({message: 'Mobile money account created', data: mobileMoneyPaymentMethod});
+                return {code: 201, message: 'Mobile money account created', data: mobileMoneyPaymentMethod, success: true}
         } else {
-            return res.status(400).json({message: 'Unknown payment method'});
+            return {message: 'Unknown payment method', code: 400, data: null};
         }
     } catch (e) {
-        return {code: 400, message: 'Something went wrong', data: null, success: false};
+        return {code: 400, message: e.message, data: null, success: false};
     }
 }
 

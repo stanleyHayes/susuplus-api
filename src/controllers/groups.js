@@ -40,7 +40,17 @@ exports.createGroup = async (req, res) => {
             await createInvitation(invitations[i], group._id, req.user._id);
         }
 
-        await addPaymentMethod(paymentMethod.method, paymentMethod.ownership, group._id, null, paymentMethod.bankAccount, paymentMethod.card, paymentMethod.mobileMoneyAccount);
+        const paymentMethodResponse = await addPaymentMethod(
+            paymentMethod.method,
+            paymentMethod.ownership,
+            group._id,
+            null,
+            paymentMethod.bankAccount,
+            paymentMethod.card,
+            paymentMethod.mobileMoneyAccount);
+
+        if(!paymentMethodResponse.success)
+            return res.status(paymentMethodResponse.code).json({message: paymentMethodResponse.message});
 
         const createdGroup = await Group.findById(group._id)
             .populate({path: 'creator', select: 'name image'});

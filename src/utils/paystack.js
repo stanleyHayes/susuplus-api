@@ -69,7 +69,7 @@ exports.verifyAccount = async (accountNumber, bankCode) => {
         });
         return response.data;
     } catch (e) {
-        return {message: 'Something Went wrong', data: null, status: false};
+        return {message: e.message, data: null, status: false};
     }
 }
 
@@ -93,7 +93,7 @@ exports.transfer = async (recipient, amount, currency, reason) => {
 
         return response.data
     } catch (e) {
-        return {message: 'Something Went wrong', data: null, status: false};
+        return {message: e.message, data: null, status: false};
     }
 }
 
