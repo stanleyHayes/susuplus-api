@@ -118,22 +118,15 @@ exports.addPaymentMethod = async (req, res) => {
         }
         else if (method === 'Mobile Money') {
             const {mobileMoneyNumber, provider, name} = req.body;
-            let code;
-            if(provider === 'mtn')
-                code = 'MTN';
-            else if(provider === 'tgo')
-                code = 'TGO';
-            else if(provider === 'vod')
-                code = 'VOD';
             if (!validator.isMobilePhone(mobileMoneyNumber)) {
                 return res.status(400).json({message: 'Invalid mobile number'});
             }
 
-            const accountVerificationResponse = await verifyAccount(mobileMoneyNumber, code);
+            const accountVerificationResponse = await verifyAccount(mobileMoneyNumber, provider.toUpperCase());
             if(!accountVerificationResponse.status)
                 return res.status(400).json({message: 'Account verification failed'});
 
-            const transferReceiptResponse = await createTransferReceipt(name, mobileMoneyNumber, 'GHS', code)
+            const transferReceiptResponse = await createTransferReceipt(name, mobileMoneyNumber, 'GHS', provider.toUpperCase())
             if (!transferReceiptResponse.status && !transferReceiptResponse.data)
                 return res.status(400).json({message: 'could not create transfer receipt'});
 
@@ -146,7 +139,7 @@ exports.addPaymentMethod = async (req, res) => {
                     user: ownership === 'Individual' ? req.user._id : undefined
                 },
                 mobileMoneyAccount: {
-                    code,
+                    code: provider.toUpperCase(),
                     provider,
                     name,
                     number: mobileMoneyNumber,
