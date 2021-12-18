@@ -159,6 +159,7 @@ exports.createDisbursement = async (req, res) => {
             }
         });
 
+        susu.round = susu.round + 1;
         await susu.save();
 
         // Send each group member an email that a contribution has been made
