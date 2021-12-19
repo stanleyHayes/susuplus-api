@@ -125,24 +125,29 @@ exports.getDashboard = async (req, res) => {
 
         res.status(200).json({
             data: {
-                latestContributions,
-                latestDisbursements,
-                totalInvitations,
-                acceptedInvitations: {
-                    acceptedInvitationsCount: acceptedInvitations,
-                    percentage: acceptancePercentage,
+                invitations: {
+                    totalInvitations,
+                    acceptedInvitations: {
+                        acceptedInvitationsCount: acceptedInvitations,
+                        percentage: acceptancePercentage,
+                    },
+                    rejectedInvitations: {
+                        rejectedInvitationsCount: rejectedInvitations,
+                        percentage: rejectedPercentage,
+                    },
+                    expiredInvitations: {
+                        expiredInvitationsCount: expiredInvitations,
+                        percentage: expiredPercentage,
+                    },
                 },
-                rejectedInvitations: {
-                    rejectedInvitationsCount: rejectedInvitations,
-                    percentage: rejectedPercentage,
+                groups: {
+                    totalUserGroups,
                 },
-                expiredInvitations: {
-                    expiredInvitationsCount: expiredInvitations,
-                    percentage: expiredPercentage,
+                susu: {
+                    totalUserSusu,
                 },
-                totalUserGroups,
-                totalUserSusu,
                 contributions: {
+                    latestContributions,
                     totalContributions,
                     totalContributionsAmount,
                     contributionCurrency,
@@ -163,6 +168,7 @@ exports.getDashboard = async (req, res) => {
                     }
                 },
                 disbursements: {
+                    latestDisbursements,
                     totalDisbursements,
                     totalDisbursementsAmount,
                     disbursementCurrency,
