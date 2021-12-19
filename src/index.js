@@ -15,6 +15,7 @@ const susuMemberRoutes = require('./routes/susu-members');
 const contributionRoutes = require('./routes/contributions');
 const paymentMethodsRoutes = require('./routes/payment-methods');
 const invitationsRoutes = require('./routes/invitations');
+const dashboardRoutes = require('./routes/dashboard');
 
 const app = express();
 dotenv.config();
@@ -41,6 +42,7 @@ app.use('/api/v1/susu-members', susuMemberRoutes);
 app.use('/api/v1/contributions', contributionRoutes);
 app.use('/api/v1/payment-methods', paymentMethodsRoutes);
 app.use('/api/v1/invitations', invitationsRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 
 
 

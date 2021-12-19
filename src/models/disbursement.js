@@ -23,7 +23,8 @@ const disbursementSchema = new Schema({
             type: Number
         },
         currency: {
-            type: String
+            type: String,
+            default: 'GHS'
         }
     },
     payment: {
