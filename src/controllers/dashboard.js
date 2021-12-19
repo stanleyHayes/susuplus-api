@@ -10,6 +10,9 @@ exports.getDashboard = async (req, res) => {
         const totalContributions = await Contribution.find({contributor: req.user._id}).countDocuments();
         const totalDisbursements = await Disbursement.find({recipient: req.user._id}).countDocuments();
 
+        let totalContributionsAmount = 0;
+        let totalDisbursementsAmount = 0;
+
         const latestContributions = await Contribution
             .find({contributor: req.user._id})
             .limit(5)
@@ -76,6 +79,8 @@ exports.getDashboard = async (req, res) => {
                 lastYearContributionsCount++;
                 lastYearContributionAmount += contribution.amount.value;
             }
+
+            totalContributionsAmount += contribution.amount.value;
         }
 
 
@@ -115,12 +120,11 @@ exports.getDashboard = async (req, res) => {
                 lastYearDisbursementsCount++;
                 lastYearDisbursementAmount += disbursement.amount.value;
             }
+            totalDisbursementsAmount += disbursement.amount.value;
         }
 
         res.status(200).json({
             data: {
-                totalContributions,
-                totalDisbursements,
                 latestContributions,
                 latestDisbursements,
                 totalInvitations,
@@ -139,6 +143,8 @@ exports.getDashboard = async (req, res) => {
                 totalUserGroups,
                 totalUserSusu,
                 contributions: {
+                    totalContributions,
+                    totalContributionsAmount,
                     contributionCurrency,
                     week: {
                         lastWeekContributions,
@@ -157,6 +163,8 @@ exports.getDashboard = async (req, res) => {
                     }
                 },
                 disbursements: {
+                    totalDisbursements,
+                    totalDisbursementsAmount,
                     disbursementCurrency,
                     week: {
                         lastWeekDisbursements,
