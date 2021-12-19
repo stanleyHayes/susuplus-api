@@ -71,6 +71,7 @@ exports.verifyAccount = async (accountNumber, bankCode) => {
         console.log(response.data);
         return response.data;
     } catch (e) {
+        console.log(e.message, 'error');
         return {message: e.message, data: null, status: false};
     }
 }
