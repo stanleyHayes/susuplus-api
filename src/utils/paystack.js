@@ -68,6 +68,7 @@ exports.verifyAccount = async (accountNumber, bankCode) => {
                 'Content-Type': 'application/json'
             }
         });
+        console.log(response.data);
         return response.data;
     } catch (e) {
         return {message: e.message, data: null, status: false};
