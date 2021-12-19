@@ -59,7 +59,6 @@ exports.createCharge = async (email, amount, currency, bank, mobile_money, card,
 
 exports.verifyAccount = async (accountNumber, bankCode) => {
     try {
-        console.log(accountNumber, bankCode);
         const response = await axios({
             method: 'GET',
             url: `https://api.paystack.co/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`,
@@ -68,10 +67,8 @@ exports.verifyAccount = async (accountNumber, bankCode) => {
                 'Content-Type': 'application/json'
             }
         });
-        console.log(response.data);
         return response.data;
     } catch (e) {
-        console.log(e.message, 'error');
         return {message: e.message, data: null, status: false};
     }
 }
