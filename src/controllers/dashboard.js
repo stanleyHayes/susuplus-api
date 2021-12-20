@@ -6,6 +6,7 @@ const moment = require("moment");
 const Invitation = require("../models/invitation");
 
 exports.getDashboard = async (req, res) => {
+
     try {
         const totalContributions = await Contribution.find({contributor: req.user._id}).countDocuments();
         const totalDisbursements = await Disbursement.find({recipient: req.user._id}).countDocuments();
@@ -56,8 +57,17 @@ exports.getDashboard = async (req, res) => {
 
         let contributionCurrency = null;
 
+        let weekContributionData = [0, 0, 0, 0, 0, 0, 0];
+        let monthContributionData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
         for (let i = 0; i < allUserContributions.length; i++) {
             const contribution = allUserContributions[i];
+
+            let week = moment(contribution.createdAt, 'YYYY-MM-DD').isoWeekday();
+            weekContributionData[week] = weekContributionData[week] + contribution.amount.value;
+
+            let month = moment(contribution.createdAt, 'YYYY-MM-DD').month();
+            monthContributionData[month] = monthContributionData[month] + contribution.month.value;
 
             if (!contributionCurrency)
                 contributionCurrency = contribution.amount.currency;
@@ -83,7 +93,6 @@ exports.getDashboard = async (req, res) => {
             totalContributionsAmount += contribution.amount.value;
         }
 
-
         const lastWeekDisbursements = [];
         let lastWeekDisbursementsCount = 0;
         let lastWeekDisbursementAmount = 0;
@@ -98,8 +107,18 @@ exports.getDashboard = async (req, res) => {
 
         let disbursementCurrency = null;
 
+        let weekDisbursementData = [0, 0, 0, 0, 0, 0, 0];
+        let monthDisbursementData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
         for (let i = 0; i < allUserContributions.length; i++) {
             const disbursement = allUserDisbursements[i];
+
+            let week = moment(disbursement.createdAt, 'YYYY-MM-DD').isoWeekday();
+            weekDisbursementData[week] = weekDisbursementData[week] + disbursement.amount.value;
+
+            let month = moment(disbursement.createdAt, 'YYYY-MM-DD').month();
+            monthDisbursementData[month] = monthDisbursementData[month] + disbursement.month.value;
+
             if (!disbursementCurrency)
                 disbursementCurrency = disbursement.amount.currency;
 
@@ -152,11 +171,15 @@ exports.getDashboard = async (req, res) => {
                     totalContributionsAmount,
                     contributionCurrency,
                     week: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        data: weekContributionData,
                         lastWeekContributions,
                         lastWeekContributionsCount,
                         lastWeekContributionAmount
                     },
                     month: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        data: monthContributionData,
                         lastMonthContributionsCount,
                         lastMonthContributions,
                         lastMonthContributionAmount
@@ -173,11 +196,15 @@ exports.getDashboard = async (req, res) => {
                     totalDisbursementsAmount,
                     disbursementCurrency,
                     week: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        data: weekDisbursementData,
                         lastWeekDisbursements,
                         lastWeekDisbursementsCount,
                         lastWeekDisbursementAmount
                     },
                     month: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        data: monthContributionData,
                         lastMonthDisbursementsCount,
                         lastMonthDisbursements,
                         lastMonthDisbursementAmount
