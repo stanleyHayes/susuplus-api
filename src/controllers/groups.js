@@ -123,6 +123,14 @@ exports.updateGroup = async (req, res) => {
             return res.status(400).json({message: 'Updates not allowed', data: null});
         for (let key of updates) {
             group[key] = req.body[key];
+            if(key === 'susuPercentage'){
+                susu.percentages.susu = req.body['susuPercentage'];
+            }
+
+            if(key === 'investmentPercentage'){
+                susu.percentages.investment = req.body['investmentPercentage'];
+            }
+
         }
         await group.save();
         const updatedGroup = await Group.findById(req.params.id)
