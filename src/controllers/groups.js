@@ -124,13 +124,12 @@ exports.updateGroup = async (req, res) => {
         for (let key of updates) {
             group[key] = req.body[key];
             if(key === 'susuPercentage'){
-                susu.percentages.susu = req.body['susuPercentage'];
+                group.percentages.susu = req.body['susuPercentage'];
             }
 
             if(key === 'investmentPercentage'){
-                susu.percentages.investment = req.body['investmentPercentage'];
+                group.percentages.investment = req.body['investmentPercentage'];
             }
-
         }
         await group.save();
         const updatedGroup = await Group.findById(req.params.id)
