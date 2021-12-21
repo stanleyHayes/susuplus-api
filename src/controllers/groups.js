@@ -2,6 +2,7 @@ const Group = require('../models/group');
 const GroupMember = require('../models/group-member');
 const {createInvitation} = require("../dao/invitation");
 const {addPaymentMethod} = require("../dao/payment-methods");
+const Susu = require("../models/susu");
 
 exports.createGroup = async (req, res) => {
     try {
@@ -110,10 +111,13 @@ exports.getGroup = async (req, res) => {
 exports.updateGroup = async (req, res) => {
     try {
         const updates = Object.keys(req.body);
-        const allowedUpdates = ['name', 'description', 'image', 'terms', 'privacyPolicies', 'percentages'];
+        const allowedUpdates = ['name', 'description', 'regulations', 'susuPercentage', 'investmentPercentage'];
         const group = await Group.findById(req.params.id);
         if (!group)
             return res.status(404).json({message: `Group not found`});
+        const susu = await Susu.findOne({group: req.params.id, status: 'STARTED'});
+        if(susu)
+            return res.status(400).json({message: 'Susu has started. Updates not allowed'});
         const isAllowed = updates.every(update => allowedUpdates.includes(update));
         if (!isAllowed)
             return res.status(400).json({message: 'Updates not allowed', data: null});
@@ -122,10 +126,13 @@ exports.updateGroup = async (req, res) => {
         }
         await group.save();
         const updatedGroup = await Group.findById(req.params.id)
-            .populate({path: 'creator', select: 'name role image'})
-            .populate({path: 'members', populate: {path: 'user', select: 'name role image'}});
+            .populate({path: 'creator', select: 'name role image'});
 
-        res.status(200).json({message: `Group Successfully Updated`, data: updatedGroup});
+        const members = await GroupMember
+            .find({group: req.params.id})
+            .populate({path: 'user', select: 'name image email'});
+
+        res.status(200).json({message: `Group Successfully Updated`, data: updatedGroup, members});
     } catch (e) {
         res.status(500).json({message: e.message});
     }
