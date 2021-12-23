@@ -50,7 +50,10 @@ exports.register = async (req, res) => {
         const message = `verify your email with the otp ${otp} and using the link ${url}`;
         await user.save();
         await sendEmail(email, 'VERIFY ACCOUNT WITH SUSU PLUS', message);
-        await sendSMS(phone, otp);
+        const response = await sendSMS(phone, otp);
+        if(response.status === 'fail')
+            return res.status(400).json({message: response.message});
+
         res.status(201).json({message: `Account Created Successfully`, data: user, token: encryptedToken});
     } catch (e) {
         res.status(500).json({message: e.message});
