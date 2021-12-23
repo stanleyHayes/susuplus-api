@@ -11,6 +11,7 @@ const cryptr = new Cryptr(process.env.CRYPTO_JS_ENCRYPT_KEY);
 
 const {generateOTP} = require("../utils/otp-generator");
 const {sendEmail} = require("../utils/emails");
+const {sendSMS} = require("../utils/sms");
 
 exports.register = async (req, res) => {
     try {
@@ -49,6 +50,7 @@ exports.register = async (req, res) => {
         const message = `verify your email with the otp ${otp} and using the link ${url}`;
         await user.save();
         await sendEmail(email, 'VERIFY ACCOUNT WITH SUSU PLUS', message);
+        await sendSMS(phone, otp);
         res.status(201).json({message: `Account Created Successfully`, data: user, token: encryptedToken});
     } catch (e) {
         res.status(500).json({message: e.message});
