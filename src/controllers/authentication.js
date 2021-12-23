@@ -130,7 +130,7 @@ exports.verifyAccount = async (req, res) => {
         if (!user)
             return res.status(401).json({data: null, message: `Invalid token`});
         if (moment().isAfter(user.otpValidUntil)) {
-            return res.status(401).json({message: `OTP has expired. Please request a new one`, data: null});
+            return res.status(401).json({message: `OTP expired`, data: null});
         }
         if (user.otp !== otp) {
             return res.status(400).json({message: `OTP incorrect`, data: null});
