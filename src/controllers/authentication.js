@@ -23,7 +23,7 @@ exports.register = async (req, res) => {
         if (!validator.isStrongPassword(password)) {
             return res.status(400).json({message: 'Enter a strong password', data: null});
         }
-        const otp = generateOTP(process.env.OTP_LENGTH, {
+        const otp = generateOTP(process.env.OTP_LENGTH_KEY, {
             digits: true, alphabets: false, specialChars: false, upperCase: false
         });
         const otpValidUntil = moment().add(30, 'days');
@@ -63,7 +63,7 @@ exports.login = async (req, res) => {
             return res.status(401).json({data: null, message: 'Authentication Failed'});
         if (user.status === 'PENDING')
             return res.status(400).json({message: 'Please verify your account', data: null});
-        const token = await jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '24hr'});
+        const token = await jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '30days'});
         res.status(200).json({message: `Successfully Logged In`, data: user, token});
     } catch (e) {
         res.status(500).json({message: e.message});
