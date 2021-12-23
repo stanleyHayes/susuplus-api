@@ -20,6 +20,11 @@ exports.register = async (req, res) => {
         const existingUser = await User.findOne({email});
         if (existingUser)
             return res.status(409).json({message: `Email ${email} is already taken`, data: null});
+
+        const existingPhone = await User.findOne({phone});
+        if (existingPhone)
+            return res.status(409).json({message: `Phone ${phone} is already taken`, data: null});
+
         if (!validator.isStrongPassword(password)) {
             return res.status(400).json({message: 'Enter a strong password', data: null});
         }
