@@ -41,10 +41,10 @@ exports.register = async (req, res) => {
         const encryptedToken = cryptr.encrypt(token);
         user.token = token;
         const url = `https://susuplus.vercel.app/auth/verify/${encryptedToken}`;
-        const message = `Click on the link ${url} and verify your email with the otp ${otp}`;
+        const message = `verify your email with the otp ${otp} and using the link ${url}`;
         await user.save();
         await sendEmail(email, 'VERIFY ACCOUNT WITH SUSU PLUS', message);
-        res.status(201).json({message: `Account Created Successfully`, data: user, token});
+        res.status(201).json({message: `Account Created Successfully`, data: user, token: encryptedToken});
     } catch (e) {
         res.status(500).json({message: e.message});
     }
@@ -123,7 +123,9 @@ exports.verifyAccount = async (req, res) => {
     try {
         const {token} = req.params;
         const {otp} = req.body;
+        console.log('here')
         const decryptedToken = cryptr.decrypt(token);
+        console.log('here')
         const user = await User.findOne({token: decryptedToken});
         if (!user)
             return res.status(401).json({data: null, message: `Invalid token`});
