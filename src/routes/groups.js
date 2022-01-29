@@ -16,7 +16,7 @@ router.route('/')
 
 router.route('/:id')
     .get(authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'USER'),getGroup)
-    .put(authenticate, authorize('SUPER_ADMIN', 'ADMIN'),updateGroup)
-    .delete(authenticate, authorize('SUPER_ADMIN', 'ADMIN'),deleteGroup);
+    .put(authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'USER'),updateGroup)
+    .delete(authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'USER'),deleteGroup);
 
 module.exports = router;
