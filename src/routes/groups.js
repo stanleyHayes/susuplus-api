@@ -11,7 +11,7 @@ const {
 const {authenticate, authorize} = require("../middleware/authentication");
 
 router.route('/')
-    .post(authenticate, authorize('SUPER_ADMIN', 'ADMIN'), createGroup)
+    .post(authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'USER'), createGroup)
     .get(authenticate, authorize('SUPER_ADMIN', 'ADMIN', 'USER'), getGroups);
 
 router.route('/:id')
