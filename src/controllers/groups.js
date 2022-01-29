@@ -38,7 +38,7 @@ exports.createGroup = async (req, res) => {
         });
 
         for (let i = 0; i < invitations.length; i++) {
-            await createInvitation(invitations[i], group._id, req.user._id);
+            await createInvitation(invitations[i].email, group._id, req.user._id);
         }
 
         const paymentMethodResponse = await addPaymentMethod(
