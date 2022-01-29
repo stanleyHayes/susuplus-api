@@ -98,12 +98,6 @@ exports.getInvitations = async (req, res) => {
         const skip = (page - 1) * limit;
         const match = {};
 
-        if (req.user.role === 'USER') {
-            match['email'] = req.user.email;
-        }
-        if (req.query.invitee) {
-            match['invitee'] = req.query.invitee
-        }
         if (req.query.status) {
             match['status'] = req.query.status;
         }
