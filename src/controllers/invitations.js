@@ -32,7 +32,7 @@ exports.createInvitation = async (req, res) => {
         const populatedInvitations = [];
 
         for (let i = 0; i < invitations.length; i++){
-            const email = invitations[i];
+            const email = invitations[i].email;
             const invitee = await User.findOne({email});
             if (invitee){
                 const existingInvitation = await Invitation
