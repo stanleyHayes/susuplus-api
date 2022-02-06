@@ -8,7 +8,7 @@ const authenticate = async (req, res, next) => {
         const [bearer, token] = req.headers['authorization'].split(' ');
         if(!bearer || !token)
             return res.status(400).json({message: `Bearer and token required`});
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET, null, null);
         const user = await User.findById(decoded._id);
         if(!user)
             return res.status(400).json({message: `Invalid token`});

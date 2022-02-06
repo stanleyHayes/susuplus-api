@@ -18,7 +18,7 @@ exports.register = async (req, res) => {
         const {email, phone, password, name, role} = req.body;
         if (!email || !phone || !password || !name)
             return res.status(400).json({message: 'Missing required fields', data: null});
-        const existingUser = await User.findOne({email});
+        const existingUser = await User.findOne({email}, );
         if (existingUser)
             return res.status(409).json({message: `Email ${email} is already taken`, data: null});
 
