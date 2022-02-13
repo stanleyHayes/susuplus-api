@@ -25,6 +25,7 @@
     "mongoose": "^6.0.9",
     "morgan": "^1.10.0",
     "otp-generator": "^3.0.0",
+    "stripe": "^8.202.0",
     "twilio": "^3.72.0",
     "validator": "^13.6.0",
     "xss": "^1.0.9"

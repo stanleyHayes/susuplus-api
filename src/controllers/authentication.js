@@ -5,6 +5,7 @@ const validator = require('validator');
 const moment = require('moment');
 const dotenv = require('dotenv');
 const Cryptr = require('cryptr');
+const {createCustomer} = require("./../utils/stripe");
 
 dotenv.config();
 const cryptr = new Cryptr(process.env.CRYPTO_JS_ENCRYPT_KEY);
@@ -33,6 +34,7 @@ exports.register = async (req, res) => {
             digits: true, alphabets: false, specialChars: false, upperCase: false
         });
         const otpValidUntil = moment().add(30, 'days');
+        const stripeCustomer = await createCustomer(name, email, phone);
         const user = await User.create({
             role,
             email,
@@ -40,10 +42,16 @@ exports.register = async (req, res) => {
             name,
             password: await bcrypt.hash(password, 10),
             otp,
-            otpValidUntil
+            otpValidUntil,
+            stripeCustomerID: stripeCustomer.id
         });
 
-        const token = await jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '30days'});
+        const token = await jwt.sign(
+            {_id: user._id},
+            process.env.JWT_SECRET,
+            {expiresIn: '30days'},
+            null
+        );
         const encryptedToken = cryptr.encrypt(token);
         user.token = token;
         const url = `https://susuplus.vercel.app/auth/verify/${encryptedToken}`;
@@ -73,7 +81,7 @@ exports.login = async (req, res) => {
             return res.status(401).json({data: null, message: 'Authentication Failed'});
         if (user.status === 'PENDING')
             return res.status(400).json({message: 'Please verify your account', data: null});
-        const token = await jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '30days'});
+        const token = await jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '30days'}, null);
         res.status(200).json({message: `Successfully Logged In`, data: user, token});
     } catch (e) {
         res.status(500).json({message: e.message});
@@ -112,7 +120,12 @@ exports.forgotPassword = async (req, res) => {
         const user = await User.findOne({email});
         if (!user)
             return res.status(404).json({message: `No account associated with email ${email}`});
-        const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET);
+        const token = jwt.sign(
+            {_id: user._id},
+            process.env.JWT_SECRET,
+            {expiresIn: '30days'},
+            null
+        );
         const encryptedToken = cryptr.encrypt(token);
         user.token = token;
         const url = `https://susuplus.vercel.app/auth/reset-password/${encryptedToken}`;
@@ -133,9 +146,7 @@ exports.verifyAccount = async (req, res) => {
     try {
         const {token} = req.params;
         const {otp} = req.body;
-        console.log('here')
         const decryptedToken = cryptr.decrypt(token);
-        console.log('here')
         const user = await User.findOne({token: decryptedToken});
         if (!user)
             return res.status(401).json({data: null, message: `Invalid token`});

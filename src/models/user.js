@@ -95,6 +95,13 @@ const userSchema = new Schema({
         date: {
             type: Date
         }
+    },
+    stripeCustomerID: {
+        type: String
+    },
+    stripeAccountBalance: {
+        type: Number,
+        default: 0
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});
 
