@@ -3,6 +3,10 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const sourceSchema = new Schema({
+    sourceID: {
+        type: String,
+        required: true
+    },
     owner: {
         type: {
             type: String,
@@ -25,18 +29,9 @@ const sourceSchema = new Schema({
     country: {
         type: String
     },
-    currency: {
-        type: String,
-        required: true
-    },
     type: {
         type: String,
         enum: ['bank_account', 'card'],
-    },
-    status: {
-        type: String,
-        enum: ['canceled', 'chargeable', 'consumed', 'failed', 'pending'],
-        default: 'pending'
     },
     bankAccountDetails: {
         accountHolderName: {
@@ -49,7 +44,7 @@ const sourceSchema = new Schema({
             required: true,
             enum: ['individual', 'company'],
         },
-        bankName: {
+        name: {
             type: String,
             required: true
         },
@@ -63,12 +58,21 @@ const sourceSchema = new Schema({
         },
         accountType: {
             type: String,
+            enum: ['checking', 'savings'],
+            required: true
+        },
+        accountNumber: {
+            type: String,
             required: true
         },
         status: {
             type: String,
             enum: ['new', 'validated', 'verified', 'verification_failed', 'errored']
-        }
+        },
+        currency: {
+            type: String,
+            required: true
+        },
     },
     cardDetails: {
         address: {
@@ -124,7 +128,12 @@ const sourceSchema = new Schema({
         cvc: {
             type: String,
             required: true
-        }
+        },
+        status: {
+            type: String,
+            enum: ['canceled', 'chargeable', 'consumed', 'failed', 'pending'],
+            default: 'pending'
+        },
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});
 

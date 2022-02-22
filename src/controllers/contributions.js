@@ -2,10 +2,10 @@ const Contribution = require('../models/contribution');
 const Group = require('../models/group');
 const GroupMember = require('../models/group-member');
 const {sendEmail} = require("../utils/emails");
-const PaymentMethod = require("../models/payment-method");
+const Source = require("../models/source");
 const Susu = require("../models/susu");
 const moment = require("moment");
-const {createCharge, transfer} = require("../utils/paystack");
+const {createCharge, createTransfer} = require("../utils/stripe");
 const Percentage = require("../models/percentage");
 const SusuMember = require("../models/susu-member");
 
@@ -53,70 +53,46 @@ exports.createContribution = async (req, res) => {
         if (!groupMember)
             return res.status(404).json({message: `User does not belong to the group`});
 
-        const recipientAccount = await PaymentMethod.findById(sourceAccount);
+        const recipientAccount = await Source.findById(sourceAccount);
         if (!recipientAccount)
             return res.status(404).json({message: `${paymentMethod} not found`});
 
         switch (paymentMethod) {
-            case 'Mobile Money':
-                const mobileMoneyAccount = await PaymentMethod.findOne(
-                    {_id: sourceAccount, method: paymentMethod});
-                if (!mobileMoneyAccount)
-                    return res.status(404).json({message: 'Mobile Money Account not found'});
-                chargeResponse = await createCharge(
-                    req.user.email,
-                    amount,
-                    currency,
-                    null,
-                    {phone: mobileMoneyAccount.number, provider: mobileMoneyAccount.provider},
-                    null,
-                    'Mobile Money');
-                if (!chargeResponse.status)
-                    return res.status(400).json({message: 'Payment failed'});
-                paymentDetails = {...chargeResponse.data};
-                break;
-
-            case 'Card':
-                const cardPaymentMethod = await PaymentMethod.findOne({_id: sourceAccount, method: paymentMethod});
+            case 'card':
+                const cardPaymentMethod = await Source.findOne({_id: sourceAccount, type: paymentMethod});
                 if (!cardPaymentMethod)
                     return res.status(404).json({message: 'Card not found'});
+
                 chargeResponse = await createCharge(
-                    req.user.email,
                     amount,
                     currency,
-                    null,
-                    null,
-                    {
-                        number: cardPaymentMethod.cardDetail.number,
-                        expiry_month: cardPaymentMethod.cardDetail.expiryMonth,
-                        expiry_year: cardPaymentMethod.cardDetail.expiryYear,
-                        cvv: cardPaymentMethod.cardDetail.cvv
-                    },
-                    'Card');
-                if (!chargeResponse.status)
+                    cardPaymentMethod.customer,
+                    req.user.email,
+                    reason,
+                    cardPaymentMethod.sourceID
+                );
+                if (chargeResponse.status !== 'succeeded')
                     return res.status(400).json({message: 'Payment failed'});
+
                 paymentDetails = chargeResponse.data;
                 break;
 
-            case 'Bank Account':
-                const bankAccountPaymentMethod = await PaymentMethod.findOne({
+            case 'bank_account':
+                const bankAccountPaymentMethod = await Source.findOne({
                     _id: sourceAccount,
-                    method: paymentMethod
+                    type: paymentMethod
                 });
                 if (!bankAccountPaymentMethod)
                     return res.status(404).json({message: 'Bank Account not found', data: null});
                 chargeResponse = await createCharge(
-                    req.user.email,
                     amount,
                     currency,
-                    {
-                        account_number: bankAccountPaymentMethod.bankAccount.accountNumber,
-                        code: bankAccountPaymentMethod.bankAccount.bankCode
-                    },
-                    null,
-                    null,
-                    'Bank Account');
-                if (!chargeResponse.status)
+                    bankAccountPaymentMethod.customer,
+                    req.user.email,
+                    reason,
+                    bankAccountPaymentMethod.sourceID
+                );
+                if (chargeResponse.status !== 'succeeded')
                     return res.status(400).json({message: 'Payment failed'});
                 paymentDetails = chargeResponse.data;
                 break;
@@ -125,14 +101,14 @@ exports.createContribution = async (req, res) => {
         const percentage = await Percentage.findOne({});
         const payableAmount = amount - (amount * percentage.percentage / 100)
 
-        const transferResponse = await transfer(
-            recipientAccount.recipientCode,
+        const transferResponse = await createTransfer(
             payableAmount,
             currency,
-            reason)
+            recipientAccount.sourceID
+        )
 
-        if (!transferResponse.status)
-            return res.status(400).json({message: transferResponse.message});
+        if (!transferResponse)
+            return res.status(400).json({message: 'Something went wrong'});
 
         const contribution = await Contribution.create({
             group: group._id,

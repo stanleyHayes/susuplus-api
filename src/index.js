@@ -14,6 +14,7 @@ const userRoutes = require('./routes/users');
 const susuMemberRoutes = require('./routes/susu-members');
 const contributionRoutes = require('./routes/contributions');
 const paymentMethodsRoutes = require('./routes/payment-methods');
+const sourceRoutes = require('./routes/sources');
 const invitationsRoutes = require('./routes/invitations');
 const dashboardRoutes = require('./routes/dashboard');
 
@@ -41,6 +42,7 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/susu-members', susuMemberRoutes);
 app.use('/api/v1/contributions', contributionRoutes);
 app.use('/api/v1/payment-methods', paymentMethodsRoutes);
+app.use('/api/v1/sources', sourceRoutes);
 app.use('/api/v1/invitations', invitationsRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 

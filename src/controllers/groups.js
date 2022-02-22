@@ -42,7 +42,7 @@ exports.createGroup = async (req, res) => {
         }
 
         const paymentMethodResponse = await addPaymentMethod(
-            paymentMethod.method,
+            paymentMethod.type,
             paymentMethod.ownership,
             group._id,
             null,

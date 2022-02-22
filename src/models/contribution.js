@@ -14,13 +14,8 @@ const contributionSchema = new Schema({
         required: true
     },
     amount: {
-        value: {
-            type: Number
-        },
-        currency: {
-            type: String,
-            default: 'GHS'
-        }
+        type: Number,
+        required: true
     },
     contributor: {
         type: Schema.Types.ObjectId,
@@ -34,93 +29,77 @@ const contributionSchema = new Schema({
     },
     sourcePaymentMethod: {
         type: Schema.Types.ObjectId,
-        ref: 'PaymentMethod',
+        ref: 'Source',
         required: true
     },
     destinationPaymentMethod: {
         type: Schema.Types.ObjectId,
-        ref: 'PaymentMethod',
+        ref: 'Source',
         required: true
     },
-    paymentDetails: {
-        type: {
-            id: {
+    stripePaymentDetails: {
+        chargeID: {
+            type: String,
+            required: true
+        },
+        amount: {
+            type: Number,
+            required: true
+        },
+        address: {
+            city: {
                 type: String,
                 required: true
             },
-            status: {
-                type: String,
-                enum: ['success', 'failed'],
-                required: true
-            },
-            reference: {
+            country: {
                 type: String,
                 required: true
             },
-            amount: {
-                type: Number,
-                required: true
-            },
-            paid_at: {
-                type: Date,
-                required: true
-            },
-            created_at: {
-                type: Date,
-                required: true
-            },
-            channel: {
+            line1: {
                 type: String,
                 required: true
             },
-            currency: {
+            line2: {
                 type: String,
                 required: true
             },
-            ip_address: {
-                type: String
-            },
-            fees: {
-                type: Number
-            },
-            authorization: {
-                authorization_code: {
-                    type: String
-                },
-                bin: {
-                    type: String
-                },
-                last4: {
-                    type: String
-                },
-                exp_month: {
-                    type: String
-                },
-                exp_year: {
-                    type: String
-                },
-                channel: {
-                    type: String
-                },
-                card_type: {
-                    type: String
-                },
-                bank: {
-                    type: String
-                },
-                country_code: {
-                    type: String
-                },
-                brand: {
-                    type: String
-                }
-            },
-        }
+            state: {
+                type: String,
+                required: true
+            }
+        },
+        email: {
+            type: String
+        },
+        name: {
+            type: String
+        },
+        phone: {
+            type: String
+        },
+        currency: {
+            type: String
+        },
+        customer: {
+            type: String
+        },
+        description: {
+            type: String
+        },
+        paid: {
+            type: Boolean,
+        },
+        paymentMethod: {
+            type: String
+        },
+        paymentMethodDetails: {
+
+        },
     },
     status: {
         type: String,
-        enum: ['Success', 'Fail', 'Pending'],
-        default: 'Pending'
+        enum: ['succeeded', 'failed', 'pending'],
+        default: 'pending'
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});
 

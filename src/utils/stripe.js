@@ -24,7 +24,7 @@ const createCard = async (customer, card, address) => {
     });
 }
 
-const createBankAccount = async (customer, bank, address) => {
+const createBankAccount = async (customer, bank) => {
     return await stripe.customers.createSource(customer, {
         object: 'bank_account',
         country: bank.country,
@@ -68,17 +68,10 @@ const createTransfer = async (amount, currency, destination) => {
 }
 
 
-/**
- * @description - Move funds from duaba account to
- * group or individual permanent bank account or cards
- * */
-const createPayout = async () => {}
-
 module.exports = {
     createCustomer,
     createBankAccount,
     createCharge,
     createCard,
-    createTransfer,
-    createPayout
+    createTransfer
 };

@@ -24,26 +24,18 @@ const disbursementSchema = new Schema({
         },
         currency: {
             type: String,
-            default: 'GHS'
+            default: 'usd'
         }
     },
     payment: {
-        method: {
+        type: {
             type: String,
-            enum: ['PAYPAL', 'MOMO', 'CARD', 'BANK'],
+            enum: ['card', 'bank_account'],
             required: true
         },
-        bankAccount: {
+        source: {
             type: Schema.Types.ObjectId,
-            ref: 'BankAccount'
-        },
-        cardDetail: {
-            type: Schema.Types.ObjectId,
-            ref: 'CardDetail'
-        },
-        mobileMoneyAccount: {
-            type: Schema.Types.ObjectId,
-            ref: 'MobileMoneyAccount'
+            ref: 'Source'
         }
     },
     paymentDetails: {
