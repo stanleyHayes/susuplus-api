@@ -111,7 +111,7 @@ const sourceSchema = new Schema({
         number: {
             type: String,
         },
-        cvc: {
+        cvv: {
             type: String,
         },
         status: {
