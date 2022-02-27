@@ -25,7 +25,8 @@ const userSchema = new Schema({
                 throw new Error(`Enter a password with lowercase, uppercase, digit and a special character`);
             }
         }
-    },email: {
+    },
+    email: {
         type: String,
         required: true,
         lowercase: true,
@@ -35,7 +36,8 @@ const userSchema = new Schema({
                 throw new Error(`Invalid email ${value}`);
             }
         }
-    },phone: {
+    },
+    phone: {
         type: String,
         required: true,
         unique: true,

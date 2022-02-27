@@ -42,6 +42,14 @@ const groupSchema = new Schema({
         type: String,
         enum: ['ACTIVE', 'DELETED', 'SUSPENDED'],
         default: 'ACTIVE'
+    },
+    stripeCustomerID: {
+        type: String,
+        required: true
+    },
+    stripeAccountBalance: {
+        type: Number,
+        default: 0
     }
 }, {timestamps: {createdAt: true, updatedAt: true}});
 

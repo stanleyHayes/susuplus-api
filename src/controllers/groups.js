@@ -3,6 +3,7 @@ const GroupMember = require('../models/group-member');
 const {createInvitation} = require("../dao/invitation");
 const {addPaymentMethod} = require("../dao/payment-methods");
 const Susu = require("../models/susu");
+const {createCustomer} = require("../utils/stripe");
 
 exports.createGroup = async (req, res) => {
     try {
@@ -20,6 +21,8 @@ exports.createGroup = async (req, res) => {
         if ((parseInt(susuPercentage) + parseInt(investmentPercentage)) < 100 || (parseInt(susuPercentage) + parseInt(investmentPercentage)) > 100)
             return res.status(400).json({message: 'Investment and susu percentages must add up to 100'});
 
+        const stripeCustomer = await createCustomer(name, null, null);
+
         const group = await Group.create({
             name,
             description,
@@ -28,7 +31,8 @@ exports.createGroup = async (req, res) => {
                 susu: susuPercentage,
                 investment: investmentPercentage,
             },
-            creator: req.user._id
+            creator: req.user._id,
+            stripeCustomerID: stripeCustomer.id
         });
 
         await GroupMember.create({
