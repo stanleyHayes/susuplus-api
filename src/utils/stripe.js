@@ -22,8 +22,6 @@ const createCard = async (customer, card, address) => {
             address_line2: address.addressLine2,
             address_country: address.country,
             address_zip: address.zip,
-            brand: card.brand,
-            funding: card.funding,
             last4: card.last4
         }
     });

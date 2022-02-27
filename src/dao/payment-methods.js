@@ -98,7 +98,6 @@ const addPaymentMethod = async (type, ownership, groupID, userID, bankAccount, c
                 customer.stripeCustomerID,
                 {
                     number: cardNumber,
-                    funding,
                     last4: cardNumber.slice(cardNumber.length - 4),
                     expiryYear,
                     expiryMonth,
