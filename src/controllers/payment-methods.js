@@ -1,4 +1,4 @@
-const PaymentMethod = require("../models/payment-method");
+const Source = require("../models/source");
 const Group = require("../models/group");
 const GroupMember = require("../models/group-member");
 const {addPaymentMethod} = require("../dao/payment-methods");
@@ -107,13 +107,13 @@ exports.getPaymentMethod = async (req, res) => {
         const {id} = req.params;
         let paymentMethod
         if (ownership === 'Individual') {
-            paymentMethod = await PaymentMethod.findOne({"owner.user": req.user.id, _id: id})
+            paymentMethod = await Source.findOne({"owner.user": req.user.id, _id: id})
                 .populate({path: 'owner.user', select: 'name image'});
         } else if (ownership === 'Group') {
             const groupMember = await GroupMember.findOne({group: req.query.group, user: req.user._id, _id: id});
             if (!groupMember)
                 return res.status(403).json({message: 'You are not a member of this group'});
-            paymentMethod = await PaymentMethod.find({"owner.group": req.query.group})
+            paymentMethod = await Source.find({"owner.group": req.query.group})
                 .populate({path: 'owner.group', select: 'name image'});
         }
         res.status(200).json({message: 'Payment method retrieved', data: paymentMethod});
@@ -127,13 +127,13 @@ exports.getPaymentMethods = async (req, res) => {
         const {ownership} = req.query;
         let paymentMethods;
         if (ownership === 'Individual') {
-            paymentMethods = await PaymentMethod.find({"owner.user": req.user.id})
+            paymentMethods = await Source.find({"owner.user": req.user._id})
                 .populate({path: 'owner.user', select: 'name image'});
         } else if (ownership === 'Group') {
             const groupMember = await GroupMember.findOne({group: req.query.group, user: req.user._id});
             if (!groupMember)
                 return res.status(403).json({message: 'You are not a member of this group'});
-            paymentMethods = await PaymentMethod.find({"owner.group": req.query.group})
+            paymentMethods = await Source.find({"owner.group": req.query.group})
                 .populate({path: 'owner.group', select: 'name image'});
         }
         res.status(200).json({message: 'Payment methods retrieved', data: paymentMethods});
