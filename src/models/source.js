@@ -36,34 +36,27 @@ const sourceSchema = new Schema({
     bankAccountDetails: {
         accountHolderName: {
             type: String,
-            required: true,
             trim: true
         },
         accountHolderType: {
             type: String,
-            required: true,
             enum: ['individual', 'company'],
         },
         name: {
             type: String,
-            required: true
         },
         last4: {
             type: String,
-            required: true
         },
         routingNumber: {
             type: String,
-            required: true
         },
         accountType: {
             type: String,
             enum: ['checking', 'savings'],
-            required: true
         },
         accountNumber: {
             type: String,
-            required: true
         },
         status: {
             type: String,
@@ -71,7 +64,6 @@ const sourceSchema = new Schema({
         },
         currency: {
             type: String,
-            required: true
         },
     },
     cardDetails: {
@@ -94,20 +86,16 @@ const sourceSchema = new Schema({
         },
         brand: {
             type: String,
-            enum: ['American Express', 'Diners Club', 'Discover', 'JCB', 'MasterCard', 'UnionPay', 'Visa', 'Unknown'],
-            default: 'Unknown'
         },
         expiryMonth: {
             type: String,
             minlength: 2,
             maxlength: 2,
-            required: true
         },
         expiryYear: {
             type: String,
             minlength: 4,
             maxlength: 4,
-            required: true
         },
         funding: {
             type: String,
@@ -116,18 +104,15 @@ const sourceSchema = new Schema({
         },
         last4: {
             type: String,
-            required: true
         },
         name: {
             type: String
         },
         number: {
             type: String,
-            required: true
         },
         cvc: {
             type: String,
-            required: true
         },
         status: {
             type: String,

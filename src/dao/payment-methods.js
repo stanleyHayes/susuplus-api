@@ -91,14 +91,13 @@ const addPaymentMethod = async (type, ownership, groupID, userID, bankAccount, c
             if (validatedCard.isExpired)
                 return {message: 'Card Expired', code: 400, success: false};
 
-            if (!validatedCard.validCardNumber || !validatedCard.validCvv)
+            if (!validatedCard.validCardNumber)
                 return {code: 400, message: 'Invalid Card', success: false};
 
-            const stripeCardResponse = createCard(
+            const stripeCardResponse = await createCard(
                 customer.stripeCustomerID,
                 {
                     number: cardNumber,
-                    brand,
                     funding,
                     last4: cardNumber.slice(cardNumber.length - 4),
                     expiryYear,
@@ -108,6 +107,7 @@ const addPaymentMethod = async (type, ownership, groupID, userID, bankAccount, c
                 },
                 address
             )
+            console.log(stripeCardResponse);
             const cardSource = await Source.create({
                 sourceID: stripeCardResponse.id,
                 type,
@@ -124,7 +124,7 @@ const addPaymentMethod = async (type, ownership, groupID, userID, bankAccount, c
                     expiryMonth,
                     expiryYear,
                     cardNumber,
-                    brand,
+                    brand: stripeCardResponse.brand,
                     expiryDate,
                 }
             });

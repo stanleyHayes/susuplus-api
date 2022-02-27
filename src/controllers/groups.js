@@ -22,7 +22,6 @@ exports.createGroup = async (req, res) => {
             return res.status(400).json({message: 'Investment and susu percentages must add up to 100'});
 
         const stripeCustomer = await createCustomer(name, null, null);
-
         const group = await Group.create({
             name,
             description,
@@ -53,7 +52,7 @@ exports.createGroup = async (req, res) => {
             paymentMethod.bankAccount,
             paymentMethod.card);
 
-        if(!paymentMethodResponse.success)
+        if (!paymentMethodResponse.success)
             return res.status(paymentMethodResponse.code).json({message: paymentMethodResponse.message});
 
         const createdGroup = await Group.findById(group._id)
@@ -119,18 +118,18 @@ exports.updateGroup = async (req, res) => {
         if (!group)
             return res.status(404).json({message: `Group not found`});
         const susu = await Susu.findOne({group: req.params.id, status: 'STARTED'});
-        if(susu)
+        if (susu)
             return res.status(400).json({message: 'Susu has started. Updates not allowed'});
         const isAllowed = updates.every(update => allowedUpdates.includes(update));
         if (!isAllowed)
             return res.status(400).json({message: 'Updates not allowed', data: null});
         for (let key of updates) {
             group[key] = req.body[key];
-            if(key === 'susuPercentage'){
+            if (key === 'susuPercentage') {
                 group.percentages.susu = req.body['susuPercentage'];
             }
 
-            if(key === 'investmentPercentage'){
+            if (key === 'investmentPercentage') {
                 group.percentages.investment = req.body['investmentPercentage'];
             }
         }
