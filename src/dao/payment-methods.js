@@ -107,7 +107,6 @@ const addPaymentMethod = async (type, ownership, groupID, userID, bankAccount, c
                 },
                 address
             )
-            console.log(stripeCardResponse);
             const cardSource = await Source.create({
                 sourceID: stripeCardResponse.id,
                 type,
