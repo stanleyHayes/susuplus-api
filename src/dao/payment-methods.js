@@ -131,7 +131,7 @@ const addPaymentMethod = async (type, ownership, groupID, userID, bankAccount, c
 
             if (cardSource)
                 return {data: cardSource, status: 201, message: 'Card Added', success: true};
-            return {data: cardSource, status: 400, message: 'Unknown payment method', success: true};
+            return {data: cardSource, status: 400, message: 'Unknown payment method', success: false};
         }
 
     } catch (e) {

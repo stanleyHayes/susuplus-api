@@ -51,8 +51,7 @@ exports.createGroup = async (req, res) => {
             group._id,
             null,
             paymentMethod.bankAccount,
-            paymentMethod.card,
-            paymentMethod.mobileMoneyAccount);
+            paymentMethod.card);
 
         if(!paymentMethodResponse.success)
             return res.status(paymentMethodResponse.code).json({message: paymentMethodResponse.message});
