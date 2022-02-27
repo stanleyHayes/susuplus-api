@@ -4,7 +4,7 @@ const CreditCard = require("credit-card");
 const Group = require("../models/group");
 const User = require("../models/user");
 
-const addPaymentMethod = async (type, ownership, groupID, userID, bankAccount, card, mobileMoneyAccount) => {
+const addPaymentMethod = async (type, ownership, groupID, userID, bankAccount, card) => {
     try {
         let customer;
         if (ownership === 'Group') {
@@ -67,21 +67,22 @@ const addPaymentMethod = async (type, ownership, groupID, userID, bankAccount, c
             if (bankAccountSource)
                 return {message: 'Bank Account Added', status: 201, success: true, data: bankAccountSource};
 
-        } else if (type === 'card') {
+        }
+        else if (type === 'card') {
             const {
                 address,
                 cvv,
                 name,
                 expiryDate,
-                number,
+                cardNumber,
                 funding,
             } = card;
 
-            const brand = CreditCard.determineCardType(number);
+            const brand = CreditCard.determineCardType(cardNumber);
             const [expiryMonth, expiryYear] = expiryDate.split("/");
             const validatedCard = CreditCard.validate({
                 cardType: brand,
-                number,
+                number: cardNumber,
                 expiryMonth,
                 expiryYear,
                 cvv
@@ -96,10 +97,10 @@ const addPaymentMethod = async (type, ownership, groupID, userID, bankAccount, c
             const stripeCardResponse = createCard(
                 customer.stripeCustomerID,
                 {
-                    number,
+                    number: cardNumber,
                     brand,
                     funding,
-                    last4: number.slice(number.length - 4),
+                    last4: cardNumber.slice(cardNumber.length - 4),
                     expiryYear,
                     expiryMonth,
                     cvv,
@@ -122,7 +123,7 @@ const addPaymentMethod = async (type, ownership, groupID, userID, bankAccount, c
                     name,
                     expiryMonth,
                     expiryYear,
-                    number,
+                    cardNumber,
                     brand,
                     expiryDate,
                 }
@@ -132,6 +133,7 @@ const addPaymentMethod = async (type, ownership, groupID, userID, bankAccount, c
                 return {data: cardSource, status: 201, message: 'Card Added', success: true};
             return {data: cardSource, status: 400, message: 'Unknown payment method', success: true};
         }
+
     } catch (e) {
         return {code: 400, message: e.message, data: null, success: false};
     }
