@@ -133,6 +133,7 @@ exports.getPaymentMethods = async (req, res) => {
             const groupMember = await GroupMember.findOne({group: req.query.group, user: req.user._id});
             if (!groupMember)
                 return res.status(403).json({message: 'You are not a member of this group'});
+            console.log(req.query.group)
             paymentMethods = await Source.find({"owner.group": req.query.group})
                 .populate({path: 'owner.group', select: 'name image'});
         }

@@ -97,7 +97,7 @@ exports.addSource = async (req, res) => {
             if(validatedCard.isExpired)
                 return res.status(400).json({message: 'Card Expired'});
 
-            if(!validatedCard.validCardNumber || !validatedCard.validCvv)
+            if(!validatedCard.validCardNumber)
                 return res.status(400).json({message: 'Invalid Card'});
 
             const stripeCardResponse = createCard(
