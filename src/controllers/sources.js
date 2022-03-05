@@ -7,7 +7,6 @@ const {addPaymentMethod} = require("../dao/payment-methods");
 exports.addSource = async (req, res) => {
     try {
         const {type, ownership} = req.body;
-
         if (ownership === 'Group') {
             const group = await Group.findById(req.body.groupID);
             if (!group)
@@ -36,10 +35,11 @@ exports.addSource = async (req, res) => {
 
             const paymentMethodResponse = await addPaymentMethod(
                 type,
-                'Individual',
-                null,
+                ownership,
+                req.body.groupID,
                 req.user._id,
-                {bankName,
+                {
+                    bankName,
                     accountNumber,
                     routingNumber,
                     accountHolderType,
@@ -80,8 +80,8 @@ exports.addSource = async (req, res) => {
 
             const paymentMethodResponse = await addPaymentMethod(
                 type,
-                'Individual',
-                null,
+                ownership,
+                req.body.groupID,
                 req.user._id.toString(),
                 null,
                 {
