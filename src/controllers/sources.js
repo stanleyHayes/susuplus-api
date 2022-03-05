@@ -1,8 +1,8 @@
 const Source = require("../models/source");
 const Group = require("../models/group");
 const GroupMember = require("../models/group-member");
-const {createBankAccount, createCard} = require("../utils/stripe");
 const CreditCard = require("credit-card");
+const {addPaymentMethod} = require("../dao/payment-methods");
 
 exports.addSource = async (req, res) => {
     try {
@@ -22,56 +22,36 @@ exports.addSource = async (req, res) => {
 
         if (type === 'bank_account') {
             const {
-                name,
+                bankName,
                 accountNumber,
                 routingNumber,
                 accountHolderType,
                 accountType,
                 accountHolderName,
-                currency,
-                country
+                country,
+                type
             } = req.body;
-            if (!name || !accountNumber || !routingNumber || !accountHolderType || !accountType || !accountHolderName || !currency)
+            if (!bankName || !accountNumber || !routingNumber || !accountHolderType || !accountType || !accountHolderName)
                 return res.status(400).json({message: 'Missing required fields'});
 
-            const stripeResponse = await createBankAccount(
-                req.user.stripeCustomerID,
-                {
-                    country,
-                    currency,
-                    accountHolderName,
-                    routingNumber,
-                    accountNumber,
-                    accountType,
-                    name,
-                    accountHolderType,
-                    last4: accountNumber.slice(accountNumber.length - 4)
-                });
-
-            const bankAccountSource = await Source.create({
-                sourceID: stripeResponse.id,
+            const paymentMethodResponse = await addPaymentMethod(
                 type,
-                country,
-                customer: stripeResponse.customer,
-                owner: {
-                    type: ownership,
-                    group: ownership === 'Group' ? req.body.groupID : undefined,
-                    user: ownership === 'Individual' ? req.user._id : undefined
-                },
-                bankAccountDetails: {
-                    status: stripeResponse.status,
-                    name,
+                'Individual',
+                null,
+                req.user._id,
+                {bankName,
                     accountNumber,
                     routingNumber,
                     accountHolderType,
+                    accountType,
                     accountHolderName,
-                    last4: accountNumber.slice(accountNumber.length - 4),
-                    currency
-                }
-            });
+                    country,
+                },
+                null);
 
-            if (bankAccountSource)
-                return res.status(200).json({message: "Bank Account Added", data: bankAccountSource});
+
+            if (!paymentMethodResponse.success)
+                return res.status(paymentMethodResponse.code).json({message: paymentMethodResponse.message});
 
         }
         else if (type === 'card') {
@@ -98,46 +78,27 @@ exports.addSource = async (req, res) => {
             if(validatedCard.isExpired)
                 return res.status(400).json({message: 'Card Expired'});
 
-            // if(!validatedCard.validCardNumber)
-            //     return res.status(400).json({message: 'Invalid Card'});
-
-            const stripeCardResponse = createCard(
-                req.user.stripeCustomerID,
+            const paymentMethodResponse = await addPaymentMethod(
+                type,
+                'Individual',
+                null,
+                req.user._id.toString(),
+                null,
                 {
                     cardNumber,
-                    brand,
                     funding,
-                    last4: cardNumber.slice(cardNumber.length - 4),
-                    expiryYear,
-                    expiryMonth,
+                    address,
                     cvv,
-                    cardHolderName
-                },
-                address
-            )
-            const cardSource = await Source.create({
-                sourceID: stripeCardResponse.id,
-                type,
-                customer: stripeCardResponse.customer,
-                country: stripeCardResponse.country,
-                owner: {
-                    type: ownership,
-                    group: ownership === 'Group' ? req.body.groupID : undefined,
-                    user: ownership === 'Individual' ? req.user._id : undefined
-                },
-                cardDetails: {
-                    cvv,
-                    cardHolderName,
-                    expiryMonth,
-                    expiryYear,
-                    cardNumber,
-                    brand,
                     expiryDate,
-                }
-            });
+                    cardHolderName,
+                });
 
-            if (cardSource)
-                return res.status(201).json({message: 'Card details added', data: cardSource});
+            if (!paymentMethodResponse.success)
+                return res.status(paymentMethodResponse.code).json({message: paymentMethodResponse.message});
+
+            return res.status(201).json({message: paymentMethodResponse.message, data: paymentMethodResponse.data});
+        }
+        else {
             return res.status(400).json({message: 'Unknown payment method'});
         }
     } catch (e) {
