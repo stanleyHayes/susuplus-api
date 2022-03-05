@@ -76,19 +76,20 @@ exports.addSource = async (req, res) => {
         }
         else if (type === 'card') {
             const {
-                address,
+                cardHolderName,
                 cvv,
-                name,
                 expiryDate,
-                number,
+                cardNumber,
+                type,
+                address,
                 funding,
             } = req.body;
 
-            const brand = CreditCard.determineCardType(number);
+            const brand = CreditCard.determineCardType(cardNumber);
             const [expiryMonth, expiryYear] = expiryDate.split("/");
             const validatedCard = CreditCard.validate({
                 cardType: brand,
-                number,
+                cardHolderName,
                 expiryMonth,
                 expiryYear,
                 cvv
@@ -103,14 +104,14 @@ exports.addSource = async (req, res) => {
             const stripeCardResponse = createCard(
                 req.user.stripeCustomerID,
                 {
-                    number,
+                    cardNumber,
                     brand,
                     funding,
-                    last4: number.slice(number.length - 4),
+                    last4: cardNumber.slice(cardNumber.length - 4),
                     expiryYear,
                     expiryMonth,
                     cvv,
-                    name
+                    cardHolderName
                 },
                 address
             )
@@ -126,10 +127,10 @@ exports.addSource = async (req, res) => {
                 },
                 cardDetails: {
                     cvv,
-                    name,
+                    cardHolderName,
                     expiryMonth,
                     expiryYear,
-                    number,
+                    cardNumber,
                     brand,
                     expiryDate,
                 }
